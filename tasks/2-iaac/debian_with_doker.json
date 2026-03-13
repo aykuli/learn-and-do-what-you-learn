@@ -1,0 +1,27 @@
+{
+    "builders": [
+        {
+            "type": "yandex",
+            "folder_id": "b1gk3l1bd4nvn0fi0fvj",
+            "zone": "ru-central1-d",
+            "image_name": "aynur_made_debian_12_with_docker_htop_tmux",
+            "image_description": "айнур custom debian with docker",
+            "source_image_family": "debian-12",
+            "subnet_id": "fl8sumo6910m2hfcuvdr",
+            "use_ipv4_nat": true,
+            "disk_type": "network-hdd",
+            "ssh_username": "debian"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "echo 'hello from packer'",
+                "sudo apt update",
+                "sudo apt update",
+                "sudo apt -y install htop tmux docker.io"
+            ]
+        }
+    ]
+}
