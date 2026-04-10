@@ -1,0 +1,14 @@
+ssh_pwauth: no
+users:
+  - name: "${VM_USER}"
+    groups: sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - "${SSH_KEY}"
+package_update: true
+packages:
+  - docker.io
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
