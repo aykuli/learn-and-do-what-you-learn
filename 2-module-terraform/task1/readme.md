@@ -107,7 +107,7 @@ resource "docker_image" "nginx" {
 
 ## Задание 2
 
-1.
+1. Запустила ВМ 
 ![](./assets/2-1.png)
 
 После некоторого времени мучений и соспотавлений наименований ресурсов и их значений. После множества не получившихся `terraform apply`, хотя `terraform validate` и `terraform plan` показывали всё зелёненьким, наконец, получилось создать ВМ в Yandex-cloud:
@@ -117,12 +117,24 @@ resource "docker_image" "nginx" {
 Виды ошибок, на которые натыкался нуб, как я:
 * начала я ошибаться с синтаксиса описания кредов в personal.auto.tfvars и разных опечатков
 * образ из примера яндекса не находился, и пришлось искать подходящий образ через `yc compute image list --folder-id standard-images`
-* хорошо бы им в документцию добавить опции `boot_disk`, написала наугад, и вышли варианты в тексте ошибки `type: must be one of network-hdd, network-ssd, network-ssd-io-m3, network-ssd-nonreplicated`
+* хорошо бы им в документаций добавить опции `boot_disk`, написала наугад, и вышли варианты в тексте ошибки `type: must be one of network-hdd, network-ssd, network-ssd-io-m3, network-ssd-nonreplicated`
 * c `platform_id` такое не проканало, пришлось искать. Оказывается  для `ru-central1-d` доступен только `standard-v3` с мин 20% долей ЦПУ Intel Ice Lake:
 Хотела минимизировать траты, получилось:
 ![](./assets/2-3.png)
 
-* 
+2. Docker есть
+![](./assets/2-4.png)
+
+3. [docker в terraform](./vm-ter/docker.tf)
+4.
+![](./assets/2-5.png)
+![](./assets/2-6.png)
+
+6. Сгенерированные пароли пробросились, записались в переменных окружения, и подходят для БД.
+![](./assets/2-7.png)
+
+
+
 
 
 
