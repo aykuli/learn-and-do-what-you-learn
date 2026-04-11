@@ -133,6 +133,45 @@ resource "docker_image" "nginx" {
 6. Сгенерированные пароли пробросились, записались в переменных окружения, и подходят для БД.
 ![](./assets/2-7.png)
 
+## Задание 3*
+
+Так как:
+* Opentofu тоже заблокировала Россию в августе 2024 года, 
+* tofu считывает файл `~/.terraform` как свой конфигурационный файл, то можно добавить `registry.opentofu.org` как зеркалируемый в яндекс терраформ режистри `https://terraform-mirror.yandexcloud.net/`:
+
+<details>
+<summary>.terraformrc</summary>
+
+```
+provider_installation {
+  network_mirror {
+    url = "https://terraform-mirror.yandexcloud.net/"
+    include = ["registry.terraform.io/*/*", "registry.opentofu.org/*/*"]
+  }
+  direct {
+    exclude = ["registry.terraform.io/*/*",  "registry.opentofu.org/*/*"]
+  }
+}
+
+```
+</details>
+
+и тогда сработает `tofu` как `terraform`:
+
+![](./assets/3-2.png)
+
+Но после применения `tofu apply` вышла ошибка.
+
+![](./assets/3-3.png)
+
+Надо было сходить на ВМ, установить `docker` и добавить пользователя `ubuntu` в группу `docker`: 
+`sudo usermod -aG docker ubuntu`
+И снова запустить команду `tofu apply` и всё получилось.
+
+![](./assets/3-4.png)
+
+
+
 
 
 
