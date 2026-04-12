@@ -1,0 +1,3 @@
+output "infra_info" {
+  value = "{\n  web: {\n    instance_name: ${yandex_compute_instance.platform.name}\n    external_ip: ${yandex_compute_instance.platform.network_interface[0].nat_ip_address}\n    fqdn: ${yandex_compute_instance.platform.fqdn}\n  },\n  db: {\n    instance_name: ${yandex_compute_instance.db-platform.name}\n    external_ip: ${yandex_compute_instance.db-platform.network_interface[0].nat_ip_address}\n    fqdn: ${yandex_compute_instance.db-platform.fqdn}\n  }\n}"
+}

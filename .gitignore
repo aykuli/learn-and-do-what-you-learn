@@ -208,3 +208,35 @@ __marimo__/
 
 **/yc_yandex.pem
 **/.vagrant/
+# Variables files (where you likely put your token, cloud_id, etc.)
+
+
+# Local .terraform directory (contains providers and modules)
+.terraform/
+
+# Distributed lock file for system-dependent provider versions
+.terraform.lock.hcl
+
+# State files (contains the current state of your infrastructure)
+# WARNING: These files often contain secrets in plain text!
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Variables files (where you likely put your token, cloud_id, etc.)
+*.tfvars
+*.tfvars.json
+
+# Override files (local developer overrides)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Environment files
+.env
+authorized_key.json
+
