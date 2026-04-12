@@ -10,15 +10,15 @@ resource "yandex_vpc_subnet" "develop" {
 }
 
 data "yandex_compute_image" "ubuntu" {
-  family = var.vm_web_instance.image_family
+  family = var.vms_resources.web.image_family
 }
 resource "yandex_compute_instance" "platform" {
-  name            = var.vm_web_instance.name
-  platform_id     = var.vm_web_instance.platform_id
+  name            = local.vm_web_name
+  platform_id     = var.vms_resources.web.platform_id
   resources {
-    cores         = var.vm_web_instance.cores
-    memory        = var.vm_web_instance.memory
-    core_fraction = var.vm_web_instance.core_fraction
+    cores         = var.vms_resources.web.cores
+    memory        = var.vms_resources.web.memory
+    core_fraction = var.vms_resources.web.core_fraction
   }
   boot_disk {
     initialize_params {
@@ -26,46 +26,37 @@ resource "yandex_compute_instance" "platform" {
     }
   }
   scheduling_policy {
-    preemptible = var.vm_web_instance.preemptible
+    preemptible = var.vms_resources.web.preemptible
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.develop.id
-    nat       = var.vm_web_instance.nat
+    nat       = var.vms_resources.web.nat
   }
 
-  metadata = {
-    serial-port-enable = 1
-    ssh-keys           = local.vm_web_ssh_user
-  }
+  metadata = var.metadata
 }
 
 ## task 3: database instance resource
-data "yandex_compute_image" "db" {
-  family = var.vm_db_instance.image_family
-}
 resource "yandex_compute_instance" "db-platform" {
-  name            = var.vm_db_instance.name
-  platform_id     = var.vm_db_instance.platform_id
+  name            = local.vm_db_name
+  platform_id     = var.vms_resources.db.platform_id
   resources {
-    cores         = var.vm_db_instance.cores
-    memory        = var.vm_db_instance.memory
-    core_fraction = var.vm_db_instance.core_fraction
+    cores         = var.vms_resources.db.cores
+    memory        = var.vms_resources.db.memory
+    core_fraction = var.vms_resources.db.core_fraction
   }
   boot_disk {
     initialize_params {
-      image_id = data.yandex_compute_image.db.image_id
+      image_id = data.yandex_compute_image.ubuntu.image_id
     }
   }
   scheduling_policy {
-    preemptible = var.vm_db_instance.preemptible
+    preemptible = var.vms_resources.db.preemptible
   }
   network_interface {
     subnet_id = yandex_vpc_subnet.develop.id
-    nat       = var.vm_db_instance.nat
+    nat       = var.vms_resources.db.nat
   }
 
-  metadata = {
-    serial-port-enable = 1
-    ssh-keys           = local.vm_db_ssh_user
-  }
+  metadata = var.metadata
 }

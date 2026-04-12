@@ -54,8 +54,13 @@ ru-central1-d	standard-v3	Intel Ice Lake	Newest zone, focuses on high-performanc
 
 [output.tf](./src/outputs.tf)
 
-![](./assets/3-5.png)
+![](./assets/4-1.png)
 
 ## Задание 5
 
+![](./assets/5-1.png)
+
+## Задание 6
+
+![](./assets/6-1.png)
 
