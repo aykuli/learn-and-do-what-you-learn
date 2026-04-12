@@ -64,3 +64,41 @@ ru-central1-d	standard-v3	Intel Ice Lake	Newest zone, focuses on high-performanc
 
 ![](./assets/6-1.png)
 
+## Задание 7*
+
+![](./assets/7-1.png)
+
+<details><summary>log</summary>
+
+```bash
+$ terraform console 
+> local.test_list[1]
+"staging"
+> length(local.test_list)
+3
+> local.test_map.admin
+"John"
+> "${local.test_map.admin} is ${sort(keys(local.test_map)).0} for ${sort(keys(local.servers)).1} server based on OS ${local.servers[sort(keys(local.servers)).1].image} with ${local.servers[sort(keys(local.servers)).1].cpu} vcpu, ${local.servers[sort(keys(local.servers)).1].ram} ram and ${length(local.servers[sort(keys(local.servers)).1].disks)} virtual disks"
+"John is admin for production server based on OS ubuntu-20-04 with 10 vcpu, 40 ram and 4 virtual disks"
+```
+</details>
+
+## Задание 8*
+
+![](./assets/8-1.png)
+
+<details><summary>log</summary>
+
+```bash
+$ terraform console 
+> sort(merge(var.test...).dev1).1
+"ssh -o 'StrictHostKeyChecking=no' ubuntu@62.84.124.117"
+```
+</details>
+
+## Задание 9*
+
+
+
+
+
