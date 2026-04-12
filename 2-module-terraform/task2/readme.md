@@ -98,6 +98,8 @@ $ terraform console
 
 ## Задание 9*
 
+![](./assets/9-1.png)
+
 
 
 
