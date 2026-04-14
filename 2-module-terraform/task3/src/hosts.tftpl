@@ -1,0 +1,14 @@
+%{~ for group in vms ~}
+
+%{~ for group_name, instances in group ~}
+
+[${group_name}]
+
+%{~ for vm in instances ~}
+${vm["name"]}   ansible_host=${vm.network_interface.0.nat_ip_address}   fqdn=${tobool(vm.hostname == "") ? vm.fqdn : vm.hostname}
+
+%{~ endfor ~}
+
+%{~ endfor ~}
+
+%{~ endfor ~}
