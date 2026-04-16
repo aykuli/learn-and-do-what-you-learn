@@ -44,4 +44,20 @@ $ yc compute instance list --format json --jq '.[] | {name: .name, labels: .labe
 
 ## Задание 2
 
+1. [Локальный модуль vpc](./src/modules/vpc/main.tf)
 
+2. [Использоание модуля в основном проекте](./src/main.tf#L1)
+
+3. Посмотрим в `terraform console` о модуле информацию:
+![](./assets/2-2.png)
+
+Соотвестствует [outputs.tf](./src/modules/vpc/outputs.tf)
+
+4. В [модули ВМ для маркетинга](./src/main.tf#L11) и [ВМ для аналитиков](./src/main.tf#L43) передаю параметры на выходе модуля `vpc`.
+
+5. [Документация, сгенерированная с `terraform-docs`](./src/modules/vpc/readme.md)
+
+![](./assets/2-3.png)
+![](./assets/2-4.png)
+
+## Задание 3

@@ -5,10 +5,6 @@ terraform {
       source = "yandex-cloud/yandex"
       version = ">= 0.47.0"
     }
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "~> 3.0"
-    }
   }
 }
 

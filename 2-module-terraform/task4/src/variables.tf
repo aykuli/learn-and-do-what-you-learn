@@ -31,7 +31,7 @@ variable "subnet_name" {
 
 variable "default_cidr" {
   type = list(string)
-  default = [ "10.130.10.0/24" ]
+  default = [ "10.0.1.0/24" ]
 }
 
 variable "vm_labels" {
@@ -66,4 +66,10 @@ variable "default_vm_instance" {
     core_fraction = 5
     nat           = true
   }
+}
+
+# task 2. for vpc module
+variable "vpc_env" {
+  type = string
+  default = "development"  
 }
