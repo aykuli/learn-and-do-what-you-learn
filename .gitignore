@@ -240,3 +240,7 @@ override.tf.json
 .env
 authorized_key.json
 
+*.ini
+hosts.yaml
+
+cloud-init.yml.example
