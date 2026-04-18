@@ -1,9 +1,4 @@
-provider "yandex" {
-  zone      = "ru-central1-d"
-  token     = var.token
-  cloud_id  = var.cloud_id
-  folder_id = var.folder_id
-}
+
 
 # Создание облачной сети и подсетей
 resource "yandex_vpc_network" "aynur-network" {

@@ -240,3 +240,11 @@ override.tf.json
 .env
 authorized_key.json
 
+*.ini
+hosts.yaml
+
+cloud-init.yml.example
+secrets
+2-module-terraform/task4/vpc/*.tf
+2-module-terraform/task4/vms/*.tf
+2-module-terraform/task4/vault/*.tf
