@@ -44,7 +44,7 @@ $ yc compute instance list --format json --jq '.[] | {name: .name, labels: .labe
 
 ## Задание 2
 
-1. [Локальный модуль vpc](./src/modules/vpc/main.tf)
+1. [Локальный модуль vpc](./modules/vpc/main.tf)
 
 ![](./assets/2-1.png)
 
@@ -54,11 +54,11 @@ $ yc compute instance list --format json --jq '.[] | {name: .name, labels: .labe
 3. Посмотрим в `terraform console` о модуле информацию:
 ![](./assets/2-2.png)
 
-Соотвестствует [outputs.tf](./src/modules/vpc/outputs.tf)
+Соотвестствует [outputs.tf](./modules/vpc/outputs.tf)
 
 4. В [модули ВМ для маркетинга](./src/main.tf#L11) и [ВМ для аналитиков](./src/main.tf#L43) передаю параметры на выходе модуля `vpc`.
 
-5. [Документация, сгенерированная с `terraform-docs`](./src/modules/vpc/readme.md)
+5. [Документация, сгенерированная с `terraform-docs`](./modules/vpc/readme.md)
 
 ![](./assets/2-3.png)
 ![](./assets/2-4.png)
@@ -299,5 +299,47 @@ Changes to Outputs:
 
 ## Задание 7*
 
+
+[Проект terraform with vault](./vault/)
+
+Vault локально из компоуза:
+
+![](./assets/7-1.png)
+
+`Terraform plan`, then `apply`:
+![](./assets/7-2.png)
+
+`Terraform console`:
+
+![](./assets/7-3.png)
+
 ## Задание 8*
+
+Ура! Получилось таки настроить s3. Решила заюзать `terramate` - очень понравился инструмент, люблю оптимизацию.
+
+`terramate.tm.hcl` хранит общие блоки для `vpc` & `vms`. Конечно, `terramate list` показывает папочку `vault` тоже, но там уже сгенерено, и не мешает.
+
+File: [terramate.tm.hcl](./terramate.tm.hcl)
+
+`terramate` файлы [vpc](./vpc/) & [vms](./vms/) в соотвествующих папках:
+```
+|- terramate.tm.hcl
+|- vpc
+   |-- vpc.tm.hcl
+   |-- personal.auto.tfvars
+|- vms
+   |-- vms.tm.hcl
+   |-- personal.auto.tfvars
+   |-- cloud-init.yml
+```
+
+Сгенерированные файлы добавила в гитигнор для чистоты и сохранения глазов ваших.
+Бакет использовала из предыдущего задания. Стейт каждого модуля в своей папке:
+![](./assets/8-1.png)
+
+![](./assets/8-2.png)
+
+![](./assets/8-3.png)
+
+
 

@@ -84,13 +84,8 @@ variable "prod_subnets" { type = list(map(string)) }
 
 variable "dev_subnets" { type = list(map(string)) }
 
-# task 6 databases
-variable "db" {
-  type = object({
-    user     = string
-    password = string
-
-    auth_plugin = string
-  })
+# backend
+variable "bucket_name" {
+  type = string
 }
 
