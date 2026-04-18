@@ -15,10 +15,9 @@ variable "vpc_env" {
   default = "development"  
 }
 
-variable "prod_subnets" { type = list(map(string)) }
-
 variable "db" {
   type = object({
+    name     = string
     user     = string
     password = string
 
@@ -26,3 +25,21 @@ variable "db" {
   })
 }
 
+variable "zones" {
+  type = list(string)
+  default = [ "ru-central1-a", "ru-central1-b" ]
+}
+
+variable "network_name" {
+  type = string
+  default = "clusters_network"
+}
+variable "HA" {
+  type = bool
+  default = false
+}
+
+variable "subnet_cidrs" {
+  type = list(list(string))
+  default = [[ "10.0.1.0/24"]]
+}

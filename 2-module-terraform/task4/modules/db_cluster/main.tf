@@ -11,9 +11,12 @@ locals {
   version = "8.0"
 }
 
-resource "yandex_vpc_subnet" "default_subnet" {
-  network_id     = var.network_id
-  v4_cidr_blocks = var.default_cidr
+resource "yandex_vpc_subnet" "cluster_subnets" {
+  count = length(var.zones)
+
+  network_id = var.network_id
+  folder_id = var.folder_id
+  v4_cidr_blocks = var.subnet_cidrs[count.index]
 }
 
 # @see https://yandex.cloud/ru/docs/terraform/resources/mdb_mysql_cluster
@@ -38,11 +41,13 @@ resource "yandex_mdb_mysql_cluster" "ayn_db_cluster" {
   }
 
   dynamic "host" {
-    for_each = var.hosts
+    # HA cluster should contain al least 2 hosts
+    for_each = var.HA ? var.zones : [var.zones.0]
 
     content {
-      zone      = host.value.zone
-      subnet_id = host.value.subnet_id
+      zone             = host.value
+      subnet_id        = yandex_vpc_subnet.cluster_subnets[host.key].id
+      assign_public_ip = var.assign_public_ip
     }
   }
 }

@@ -104,7 +104,200 @@ $ yc compute instance list --format json --jq '.[] | {name: .name, labels: .labe
 ![](./assets/4-6.png)
 
 ## Задание 5*
+
+Созданные сущности:
+
+* [Module `db_cluster`](./modules/db_cluster/main.tf)
+* [Module `db_database`](./modules/db_database/main.tf)
+* [Папка с проектом создания кластера и бд](./db_cluster/main.tf)
+
+Таки у меня получилось сделать 3,3 ~~тыщ мильон до неба~~ тысяч рублей кластер, методом перебора в UI веб консоли среди их пресетов ресурсов. Но это для кластера с одним хостом (HA=false).
+
+
+<details>
+<summary>terraform plan</summary>
+
+```
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_vpc_network.vpc_network will be created
+  + resource "yandex_vpc_network" "vpc_network" {
+      + created_at                = (known after apply)
+      + default_security_group_id = (known after apply)
+      + folder_id                 = (known after apply)
+      + id                        = (known after apply)
+      + labels                    = (known after apply)
+      + name                      = "clusters_network"
+      + subnet_ids                = (known after apply)
+    }
+
+  # module.example.yandex_mdb_mysql_cluster.ayn_db_cluster will be created
+  + resource "yandex_mdb_mysql_cluster" "ayn_db_cluster" {
+      + allow_regeneration_host   = false
+      + backup_retain_period_days = (known after apply)
+      + created_at                = (known after apply)
+      + deletion_protection       = (known after apply)
+      + description               = "Mysql DB cluster"
+      + disk_encryption_key_id    = (known after apply)
+      + environment               = "PRESTABLE"
+      + folder_id                 = "b1gt5btpj16uq33j8643"
+      + health                    = (known after apply)
+      + host_group_ids            = (known after apply)
+      + id                        = (known after apply)
+      + mysql_config              = {
+          + "default_authentication_plugin" = "MYSQL_NATIVE_PASSWORD"
+          + "max_connections"               = "10"
+          + "sql_mode"                      = "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+        }
+      + name                      = "aynurs-awesome-db-cluster"
+      + network_id                = (known after apply)
+      + status                    = (known after apply)
+      + version                   = "8.0"
+
+      + access (known after apply)
+
+      + backup_window_start (known after apply)
+
+      + disk_size_autoscaling (known after apply)
+
+      + host {
+          + assign_public_ip   = true
+          + fqdn               = (known after apply)
+          + replication_source = (known after apply)
+          + subnet_id          = (known after apply)
+          + zone               = "ru-central1-a"
+        }
+
+      + maintenance_window (known after apply)
+
+      + performance_diagnostics (known after apply)
+
+      + resources {
+          + disk_size          = 10
+          + disk_type_id       = "network-hdd"
+          + resource_preset_id = "b1.medium"
+        }
+    }
+
+  # module.example.yandex_vpc_subnet.cluster_subnet will be created
+  + resource "yandex_vpc_subnet" "cluster_subnet" {
+      + created_at     = (known after apply)
+      + folder_id      = "b1gt5btpj16uq33j8643"
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = (known after apply)
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.0.1.0/24",
+          + "10.0.2.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = (known after apply)
+    }
+
+  # module.mysql_db.yandex_mdb_mysql_database_v2.db will be created
+  + resource "yandex_mdb_mysql_database_v2" "db" {
+      + cluster_id               = (known after apply)
+      + deletion_protection_mode = "DELETION_PROTECTION_MODE_DISABLED"
+      + id                       = (known after apply)
+      + name                     = "test"
+    }
+
+  # module.mysql_db.yandex_mdb_mysql_user.user will be created
+  + resource "yandex_mdb_mysql_user" "user" {
+      + authentication_plugin = "MYSQL_NATIVE_PASSWORD"
+      + cluster_id            = (known after apply)
+      + connection_manager    = (known after apply)
+      + generate_password     = false
+      + global_permissions    = [
+          + "PROCESS",
+        ]
+      + id                    = (known after apply)
+      + name                  = "aynur"
+      + password              = (sensitive value)
+
+      + connection_limits (known after apply)
+
+      + permission {
+          + database_name = "test"
+          + roles         = [
+              + "ALL",
+            ]
+        }
+    }
+
+Plan: 5 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + db_info = {
+      + cluster = {
+          + cluster = {
+              + id        = (known after apply)
+              + labels    = null
+              + name      = "aynurs-awesome-db-cluster"
+              + resources = [
+                  + {
+                      + disk_size          = 10
+                      + disk_type_id       = "network-hdd"
+                      + resource_preset_id = "b1.medium"
+                    },
+                ]
+              + status    = (known after apply)
+              + version   = "8.0"
+            }
+        }
+      + db      = {
+          + database = {
+              + cluster_id  = (known after apply)
+              + db_id       = (known after apply)
+              + db_name     = "test"
+              + db_username = "aynur"
+            }
+        }
+    }
+
+```
+</details>
+
+Выполнился `terraform apply`:
+![](./assets/5-1.png)
+
+Информация о кластере в веб консоли ЯО:
+![](./assets/5-2.png)
+
+Информация о хосте в веб консоли ЯО:
+![](./assets/5-3.png)
+
+Информация о бд:
+![](./assets/5-4.png)
+
+Тут есть подсказка, как подключиться к бд, коей я воспользовалась:
+![](./assets/5-5.png)
+
+Моей воспользование - зашла в mysql, потыкала, работает.
+![](./assets/5-6.png)
+
+Это я в personal.auto.tfvars добавила информцию об ещё одном хосте - каждый хост должен быть в отдельном subnet:
+
+![](./assets/5-8.png)
+
+Изменения применились:
+![](./assets/5-9.png)
+![](./assets/5-10.png)
+
+![](./assets/5-11.png)
+
+
 ## Задание 6*
+
+[Code of using module simple s3](./s3yc/main.tf)
+
+![](./assets/6-1.png)
+
 ## Задание 7*
+
 ## Задание 8*
 

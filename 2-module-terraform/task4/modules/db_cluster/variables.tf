@@ -51,26 +51,30 @@ variable "auth_plugin" {
   EOF
 }
 
-variable "hosts" {
-  type = list(object({
-    zone      = string
-    subnet_id = string
-    assign_public_ip = optional(bool)
-  }))
+variable "HA" {
+  type = bool
+  default = true
+}
+
+variable "zones" {
+  type = list(string)
+  default = [ "ru-central1-a", "ru-central1-b" ]
 
   description = <<-EOF
-    Tips:
-      * If you provide more than one host block (manually or via dynamic), 
-      the cluster is automatically considered High Availability (HA).
-      * Every `subnet_id` used in the host blocks must belong to 
-      the same `network_id` defined at the cluster level.
+   Should be defined 2 or more zones for HA cluster
   EOF
 }
 
-variable "host_zone" {
-  type = string
-  default = "ru-central1-a"
+variable "subnet_cidrs" {
+  type = list(list(string))
+  default = [[ "10.0.1.0/24"]]
 }
+
+variable "assign_public_ip" {
+  type = bool
+  default = true
+}
+
 
 variable "resouces" {
   type = object({
@@ -79,7 +83,7 @@ variable "resouces" {
     disk_size          = number
   })
   default = {
-    resource_preset_id = "s2.micro"
+    resource_preset_id = "b1.medium"
     disk_type_id = "network-hdd"
     disk_size = 10
   }
