@@ -1,16 +1,26 @@
 module "vpc_dev" {
-  source = "./modules/vpc"
+  source    = "../modules/vpc"
   folder_id = var.folder_id
-  zone = var.default_zone
-  vpc_env = var.vpc_env
-  cidr = var.default_cidr.0
+  env_name  = var.vpc_env
+  subnets   = var.dev_subnets
+}
+
+module "vpc_prod" {
+  source    = "../modules/vpc"
+  folder_id = var.folder_id
+  env_name  = var.vpc_env_prod
+  subnets   = var.prod_subnets
+}
+
+locals {
+  prod_subnets = module.vpc_prod.subnets
 }
 
 module "marketing_vm" {
   source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
-  network_id     = module.vpc_dev.subnet.network_id
-  subnet_ids     = [module.vpc_dev.subnet.id]
-  subnet_zones   = [module.vpc_dev.subnet.zone]
+  network_id     = local.prod_subnets.0.network_id
+  subnet_ids     = [for item in local.prod_subnets : item.id]
+  subnet_zones   = [for item in local.prod_subnets : item.zone]
   platform       = var.default_vm_instance.platform_id
   
   instance_name  = "${var.vm_labels.0}-${var.default_vm_instance.name}"
@@ -40,9 +50,9 @@ module "marketing_vm" {
 
 module "analytics_vm" {
   source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
-  network_id     = module.vpc_dev.subnet.network_id
-  subnet_ids     = [module.vpc_dev.subnet.id]
-  subnet_zones   = [module.vpc_dev.subnet.zone]
+  network_id     = local.prod_subnets.0.network_id
+  subnet_ids     = [for item in local.prod_subnets : item.id]
+  subnet_zones   = [for item in local.prod_subnets : item.zone]
   
   platform       = var.default_vm_instance.platform_id
   

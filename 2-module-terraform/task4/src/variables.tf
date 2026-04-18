@@ -73,3 +73,24 @@ variable "vpc_env" {
   type = string
   default = "development"  
 }
+
+variable "vpc_env_prod" {
+  type = string
+  default = "production"
+}
+
+# task 4
+variable "prod_subnets" { type = list(map(string)) }
+
+variable "dev_subnets" { type = list(map(string)) }
+
+# task 6 databases
+variable "db" {
+  type = object({
+    user     = string
+    password = string
+
+    auth_plugin = string
+  })
+}
+

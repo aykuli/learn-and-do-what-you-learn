@@ -9,12 +9,15 @@ terraform {
 }
 
 resource "yandex_vpc_network" "vpc_network" {
-  name = "${var.vpc_env}-network"
+  name = "${var.env_name}-network"
 }
 
 resource "yandex_vpc_subnet" "vpc_subnet" {
-  name = "${var.vpc_env}-subnet"
-  v4_cidr_blocks = [ var.cidr ]
+  count = length(var.subnets)
+  
+  name = "${var.env_name}-subnet-${count.index}"
+  
+  v4_cidr_blocks = [ var.subnets[count.index].cidr ]
   network_id = yandex_vpc_network.vpc_network.id
-  zone = var.zone
+  zone = var.subnets[count.index].zone
 }

@@ -1,20 +1,19 @@
-variable "zone" {
-  type = string
-  description = "https://yandex.cloud/ru/docs/overview/concepts/geo-scope"
-}
-
 variable "folder_id" {
   type = string
   description = "Provider folder you are going to work in"
 }
 
-variable "vpc_env" {
+variable "env_name" {
   type = string
   default = "development"  
   description = "Will be used in name templates of network and it's subnet"
 }
 
-variable "cidr" {
-  type = string
-  description = "XX.XX.XX.XX/XX"
+variable "subnets" { 
+  type = list(object(
+    {
+      cidr = string
+      zone = string
+    }
+  ))
 }
