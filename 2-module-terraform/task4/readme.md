@@ -2,7 +2,7 @@
 
 ## Задание 1
 
-* Список созданных ресурсов с помощью удаленного модуля от udjin10,
+* Список созданных ресурсов с помощью удаленного [модуля от udjin10 yandex_compute_instance](git::https://github.com/udjin10/yandex_compute_instance.git?ref=main) в проекте [src](./src/main.tf#L19),
 * Получение IP адресов,
 * Вход по этим адресам на 2 машины - маркетинг и аналитика,
 * Проверка в каждой установленного прокси-сервера c командой `sudo nginx -t`.
@@ -56,7 +56,7 @@ $ yc compute instance list --format json --jq '.[] | {name: .name, labels: .labe
 
 Соотвестствует [outputs.tf](./modules/vpc/outputs.tf)
 
-4. В [модули ВМ для маркетинга](./src/main.tf#L11) и [ВМ для аналитиков](./src/main.tf#L43) передаю параметры на выходе модуля `vpc`.
+4. В [модули ВМ для маркетинга](./src/main.tf#L19) и [ВМ для аналитиков](./src/main.tf#L51) передаю параметры на выходе модуля `vpc`.
 
 5. [Документация, сгенерированная с `terraform-docs`](./modules/vpc/readme.md)
 
@@ -87,17 +87,16 @@ $ yc compute instance list --format json --jq '.[] | {name: .name, labels: .labe
 
 ## Задание 4
 
-Скриншот кода ( а то вдруг опять изменить надо будет, а я их по коммитам не делаю):
-* модуль vpc
+* Скриншоты кода модуля vpc:
 ![](./assets/4-1.png)
 ![](./assets/4-2.png)
 ![](./assets/4-3.png)
 
-* использоание модуля. Правда, vpc_prod я нигде не использую, просто создала для тестов.
+* Использование модуля. Правда, vpc_prod я нигде не использую, просто создала для тестов.
 
 ![](./assets/4-4.png)
 
-* посмотреть список созданных сущностей в yc cli - я в подсетях ВМ не создавала
+* посмотреть список созданных сущностей в yc cli - не во всех подсетях ВМ создавала
 ![](./assets/4-5.png)
 
 * кусок `terraform plan` простыни
@@ -293,14 +292,14 @@ Changes to Outputs:
 
 ## Задание 6*
 
-[Code of using module simple s3](./s3yc/main.tf)
+[Простой s3 бакет в ЯО](./s3yc/main.tf)
 
 ![](./assets/6-1.png)
 
 ## Задание 7*
 
 
-[Проект terraform with vault](./vault/)
+[Проект terraform with vault](./vault/stack.tm.hcl)
 
 Vault локально из компоуза:
 
@@ -313,15 +312,25 @@ Vault локально из компоуза:
 
 ![](./assets/7-3.png)
 
+5. Новый секрет в `vault` с помощью `terraform`:
+
+[Блок resource.vault_generic_secret для создания сикретов из терраформа](./vault/stack.tm.hcl#L18)
+
+![](./assets/7-4.png)
+![](./assets/7-5.png)
+![](./assets/7-6.png)
+
 ## Задание 8*
 
 Ура! Получилось таки настроить s3. Решила заюзать `terramate` - очень понравился инструмент, люблю оптимизацию.
 
 `terramate.tm.hcl` хранит общие блоки для `vpc` & `vms`. Конечно, `terramate list` показывает папочку `vault` тоже, но там уже сгенерено, и не мешает.
 
+❓ Вопрос: terramate globals переменные не прокидываются?
+
 File: [terramate.tm.hcl](./terramate.tm.hcl)
 
-`terramate` файлы [vpc](./vpc/) & [vms](./vms/) в соотвествующих папках:
+`terramate` файлы [vpc](./vpc/vpc.tm.hcl) & [vms](./vms/vms.tm.hcl) в соотвествующих папках:
 ```
 |- terramate.tm.hcl
 |- vpc

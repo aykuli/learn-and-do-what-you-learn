@@ -14,13 +14,23 @@ generate_hcl "main.tf" {
     data "vault_generic_secret" "vault_ex" {
       path = var.secrets_path
     }
+
+    resource "vault_generic_secret" "writing_example" {
+      path = var.secrets_path
+
+      data_json = var.writing_example != null ? jsonencode(var.writing_example) : null
+    }
+
     output "vault_info" {
-      value = "${nonsensitive(data.vault_generic_secret.vault_ex.data[var.key_name])}"
+      value = "Success! The secret is written to Vault"
+      # Below row is for test purpose only, in real life you should never output secrets in plain text
+      # value = "${nonsensitive(data.vault_generic_secret.vault_ex.data[var.key_name])}"
     }
   }
 }
 
-generate_hcl "variables.tf" {
+generate_hcl "v_variables.tf" {
+  inherit = false
   content {
     variable "vault_address" {
       type    = string
@@ -42,7 +52,11 @@ generate_hcl "variables.tf" {
 
     variable "key_name" {
       type    = string
-    }    
+    }
+
+    variable "writing_example" {
+      type = map(string)
+    }
   }
 }
 

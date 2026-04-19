@@ -41,7 +41,7 @@ resource "yandex_mdb_mysql_cluster" "ayn_db_cluster" {
   }
 
   dynamic "host" {
-    # HA cluster should contain al least 2 hosts
+    # HA cluster should contain at least 2 hosts
     for_each = var.HA ? var.zones : [var.zones.0]
 
     content {
