@@ -37,7 +37,7 @@ generate_hcl "backend.tf" {
   content {
     terraform {
       backend "s3" {
-        endpoint = "https://storage.yandexcloud.net"
+        endpoint = { s3 = "https://storage.yandexcloud.net" }
         bucket   = "ayn-terra"
         key      = "${terramate.stack.path.relative}/terraform.tfstate"
 
