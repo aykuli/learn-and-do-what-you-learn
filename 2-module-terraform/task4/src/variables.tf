@@ -19,20 +19,6 @@ variable "default_zone" {
   default = "ru-central1-a"
 }
 
-variable "network_name" {
-  type = string
-  default = "ayn-netw"
-}
-
-variable "subnet_name" {
-  type = string
-  default = "ayn-subnet"
-}
-
-variable "default_cidr" {
-  type = list(string)
-  default = [ "10.0.1.0/24" ]
-}
 
 variable "vm_labels" {
   type = list(string)
@@ -87,5 +73,11 @@ variable "dev_subnets" { type = list(map(string)) }
 # backend
 variable "bucket_name" {
   type = string
+  default = "ayn-terra"
 }
-
+variable "access_key" {
+  type = string
+}
+variable "secret_key" {
+  type = string
+}
