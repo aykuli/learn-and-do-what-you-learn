@@ -14,6 +14,14 @@ variable "default_zone" {
 }
 # ---
 
+variable "vm_user" {
+  type = string
+}
+
+variable "ssh_key" {
+  type      = string
+  sensitive = true
+}
 
 # --- # MODULE VARS ---
 variable "service_account_name" {

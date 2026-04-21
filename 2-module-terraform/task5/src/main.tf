@@ -37,4 +37,15 @@ resource "yandex_compute_instance" "vm" {
   scheduling_policy {
     preemptible = var.vm.preemptible
   }
+  metadata = {
+    user-data = templatefile("cloud-init.yml",{
+      vm_user        = var.vm_user
+      ssh_public_key = var.ssh_key
+    })
+    serial-port-enable = 1
+  }
+}
+
+output "ip" {
+  value = yandex_compute_instance.vm.network_interface[0].nat_ip_address
 }

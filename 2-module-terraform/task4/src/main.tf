@@ -1,13 +1,11 @@
 module "vpc_dev" {
   source    = "../modules/vpc"
-  folder_id = var.folder_id
   env_name  = var.vpc_env
   subnets   = var.dev_subnets
 }
 
 module "vpc_prod" {
   source    = "../modules/vpc"
-  folder_id = var.folder_id
   env_name  = var.vpc_env_prod
   subnets   = var.prod_subnets
 }
@@ -17,13 +15,13 @@ locals {
 }
 
 module "marketing_vm" {
-  source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
-  network_id     = local.prod_subnets.0.network_id
+  source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=v1.0.0"
+  network_id     = local.prod_subnets[0].network_id
   subnet_ids     = [for item in local.prod_subnets : item.id]
   subnet_zones   = [for item in local.prod_subnets : item.zone]
   platform       = var.default_vm_instance.platform_id
   
-  instance_name  = "${var.vm_labels.0}-${var.default_vm_instance.name}"
+  instance_name  = "${var.vm_labels[0]}-${var.default_vm_instance.name}"
   instance_count = 1
   image_family   = var.default_vm_instance.image_family
   public_ip      = var.default_vm_instance.nat
@@ -37,7 +35,7 @@ module "marketing_vm" {
 
   labels = { 
     owner   = var.vm_user,
-    project = var.vm_labels.0
+    project = var.vm_labels[0]
   }
   metadata = {
     user-data = templatefile("cloud-init.yml",{
@@ -49,14 +47,14 @@ module "marketing_vm" {
 }
 
 module "analytics_vm" {
-  source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
-  network_id     = local.prod_subnets.0.network_id
+  source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=v1.0.0"
+  network_id     = local.prod_subnets[0].network_id
   subnet_ids     = [for item in local.prod_subnets : item.id]
   subnet_zones   = [for item in local.prod_subnets : item.zone]
   
   platform       = var.default_vm_instance.platform_id
   
-  instance_name  = "${var.vm_labels.1}-${var.default_vm_instance.name}"
+  instance_name  = "${var.vm_labels[1]}-${var.default_vm_instance.name}"
   instance_count = 1
   image_family   = var.default_vm_instance.image_family
   public_ip      = var.default_vm_instance.nat
@@ -70,7 +68,7 @@ module "analytics_vm" {
 
   labels = { 
     owner   = var.vm_user,
-    project = var.vm_labels.1
+    project = var.vm_labels[1]
   }
   metadata = {
     user-data = templatefile("cloud-init.yml",{

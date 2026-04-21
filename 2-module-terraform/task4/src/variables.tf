@@ -69,15 +69,3 @@ variable "vpc_env_prod" {
 variable "prod_subnets" { type = list(map(string)) }
 
 variable "dev_subnets" { type = list(map(string)) }
-
-# backend
-variable "bucket_name" {
-  type = string
-  default = "ayn-terra"
-}
-variable "access_key" {
-  type = string
-}
-variable "secret_key" {
-  type = string
-}

@@ -9,10 +9,6 @@ variable "network_id" {
   description = "Network id to work in"
 }
 
-variable "default_cidr" {
-  type = list(string)
-  default = [ "10.0.4.0/24" ]
-}
 variable "description" {
   type = string
   default = "Mysql DB cluster"
@@ -70,12 +66,6 @@ variable "subnet_cidrs" {
   default = [[ "10.0.1.0/24"]]
 }
 
-variable "assign_public_ip" {
-  type = bool
-  default = true
-}
-
-
 variable "resouces" {
   type = object({
     resource_preset_id = string
@@ -113,4 +103,8 @@ The amount of storage space allocated to each host, typically measured in GB.
                  local-ssd requires larger increments (e.g., 100 GB or 368 GB depending on the processor platform).
     **Safety Tip**: If a disk reaches 95% capacity, the cluster automatically switches to read-only mode. 
   EOT
+}
+
+variable "security_group_ids" {
+  type = list(string)
 }
