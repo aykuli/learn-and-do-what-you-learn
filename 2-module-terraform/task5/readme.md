@@ -88,6 +88,7 @@ terraform {
 
 ![](./assets/2-2.png)
 ![](./assets/2-3.png)
+
 В бакете появилась папочка проекта со стейтом.
 ![](./assets/2-4.png)
 До этого я сервисному аккунту `ayn-netology-sa` добавила роль `storage.uploader`. Роль `storage.uploader` позволяет загружать объекты в бакеты, в том числе перезаписывать загруженные ранее, а также читать данные в бакетах, просматривать информацию о бакетах и объектах в них, а также о каталоге и квотах сервиса Object Storage. Не позволяет удалять объекты и конфигурировать бакеты.
@@ -96,4 +97,122 @@ terraform {
 
 ## Задание 3
 
+[Pull request с фиксами по результату сканирования с `checkov` и `tflint`](https://github.com/aykuli/learn-and-do-what-you-learn/pull/4)
+
+![](./assets/3-3.png)
+Для checkov я использоала такую настройку для всех папок.
+
+<details>
+<summary>Было</summary>
+
+![](./assets/3-1.png)
+![](./assets/3-2.png)
+![](./assets/3-4.png)
+![](./assets/3-1.png)
+
+</details>
+
+<details>
+<summary>Стало</summary>
+
+![](./assets/3-5.png)
+![](./assets/3-6.png)
+![](./assets/3-7.png)
+
+</details>
+
+## Задание 4
+
+[Код](./mock_project/main.tf)
+
+<details>
+<summary>varibales blocks</summary>
+
+```bash
+variable "ip" {
+  type = string
+  description = "ip-адрес"
+  validation {
+    condition     = can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", var.ip))
+    error_message = "Значение IP ты ввела неправильно, посмотри свои объявления переменных в *.auto.tfvars, может опечалатась?"
+  }
+}
+
+variable "ip_addresses" {
+  type = list(string)
+  description = "список ip-адресов"
+  validation {
+    condition = alltrue([
+      for ip in var.ip_addresses : can(regex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", ip))
+    ])
+    error_message = "В одной из адресов есть ошибка, в какой не знаю, сама ищи."
+  }
+}
+```
+</details>
+
+![](./assets/4-1.png)
+
+## Задание 5*
+
+[Код](./mock_project/main.tf#L34)
+
+<details>
+<summary>varibales blocks</summary>
+
+```bash
+variable "lower_str" {
+  type = string
+  description = "line with only lower letters"
+  validation {
+    condition = length(regexall("[A-Z]", var.lower_str)) == 0
+    error_message = "В царство карликов принимаются только маленькие буквы. Вам в следующее окошко."
+  }
+}
+
+variable "choose_the_right_pill" {
+  type = object({ blue: bool, red:  bool })
+  default = {blue: true, red:  false }
+
+  validation {
+    condition = values(var.choose_the_right_pill)[0] == !values(var.choose_the_right_pill)[1]
+    error_message = "Джедай, ты в матрице! Ты должен выбрать только одну таблетку - выбирай настоящее или илллюзия?"
+  }
+}
+```
+</details>
+
+![](./assets/5-1.png)
+
+## Задание 6*
+
+## Задание 7*
+
+[Модуль с инфраструктурой для remote state](./modules/remote_state_infra/main.tf) включает в себя:
+
+* создание сервисного аккаунта
+* добавление роли `storage.editor` созданному сервисному аккаунту
+* создание статического доступа ключей
+* собственно, создание самого бакета.
+
+[Применение модуля `remote state` в рандомном проекте с ВМ-ами, например.](./src/main.tf)
+.
+Процесс применения модуля в каком-либо проекте:
+
+1. `Apply` модуля `remote state` отдельно, сохраняю креды в env переменных:
+
+```
+export ACCESS_KEY="..."
+export SECRET_KEY="..."
+```
+
+2. Иду в папку с проектом `src`, запускаю его командой:
+
+```bash
+terraform init -backend-config="access_key=$ACCESS_KEY" -backend-config="secret_key=$SECRET_KEY" -migrate-state
+```
+
+![](./assets/7-1.png)
+![](./assets/7-2.png)
+![](./assets/7-3.png)
 
