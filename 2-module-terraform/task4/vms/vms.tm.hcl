@@ -45,7 +45,7 @@ generate_hcl "main.tf" {
     }
 
     module "marketing_vm" {
-      source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
+      source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=v1.0.0"
       network_id     = local.prod_subnets.0.network_id
       subnet_ids     = [for item in local.prod_subnets : item.id]
       subnet_zones   = [for item in local.prod_subnets : item.zone]
@@ -77,7 +77,7 @@ generate_hcl "main.tf" {
     }
 
     module "analytics_vm" {
-      source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
+      source         = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=v1.0.0"
       network_id     = local.prod_subnets.0.network_id
       subnet_ids     = [for item in local.prod_subnets : item.id]
       subnet_zones   = [for item in local.prod_subnets : item.zone]

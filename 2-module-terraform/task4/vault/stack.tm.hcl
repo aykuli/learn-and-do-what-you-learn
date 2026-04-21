@@ -5,7 +5,15 @@ stack {
 
 generate_hcl "main.tf" {
   content {
-    terraform {}
+    terraform {
+      required_providers {
+        vault = {
+          source  = "hashicorp/vault"
+          version = "~> 4.0"
+        }
+      }
+      required_version = ">=1.12.0"
+    }
     provider "vault" {
       address         = var.vault_address
       skip_tls_verify = var.skip_tls_verify

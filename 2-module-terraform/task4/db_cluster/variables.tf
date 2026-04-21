@@ -10,11 +10,6 @@ variable "default_zone" {
   default = "ru-central1-a"
 }
 
-variable "vpc_env" {
-  type = string
-  default = "development"  
-}
-
 variable "db" {
   type = object({
     name     = string
@@ -42,4 +37,9 @@ variable "HA" {
 variable "subnet_cidrs" {
   type = list(list(string))
   default = [[ "10.0.1.0/24"]]
+}
+
+variable "sg_name" {
+  type = string
+  default = "sg-cluster"
 }
