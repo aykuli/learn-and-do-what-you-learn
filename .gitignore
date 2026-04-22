@@ -239,4 +239,5 @@ override.tf.json
 # Environment files
 .env
 authorized_key.json
-
+*.ini
+hosts.yaml

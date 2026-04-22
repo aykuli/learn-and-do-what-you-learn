@@ -1,0 +1,1 @@
+echo "Aynur says: Awesome lessons! Good job, keep it up!" > /tmp/test-remote-exec
