@@ -1,0 +1,46 @@
+image:
+  name: hashicorp/terraform:latest
+  entrypoint: [""]
+
+stages:
+  - init
+  - plan
+  - apply
+
+# Cache the .terraform folder to speed up subsequent jobs
+cache:
+  paths:
+    - .terraform
+
+before_script:
+  - git clone git@github.com:aykuli/learn-and-do-what-you-learn.git
+  - cd 2-module-terraform/task5/src/ 
+  - terraform --version
+  - terraform init
+
+tf_plan:
+  stage: plan
+  script:
+    - terraform plan
+
+tf_apply:
+  stage: apply
+  script:
+    - terraform apply -auto-approve
+  dependencies:
+    - tf_plan
+  # Manual trigger terraform apply
+  when: manual
+  only:
+    - main
+
+tf_destroy:
+  stage: apply
+  script:
+    - terraform destroy -auto-approve
+  dependencies:
+    - tf_apply
+  # Manual trigger terraform destroy
+  when: manual
+  only:
+    - main

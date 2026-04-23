@@ -1,9 +1,18 @@
+# --- PROVIDERS VARS ---
 variable "folder_id" {
   type = string
 }
 variable "cloud_id" {
   type = string
 }
+variable "keys_path" {
+  type = string
+}
+variable "default_zone" {
+  type    = string
+  default = "ru-central1-a"
+}
+# ---
 
 variable "vm_user" {
   type = string
@@ -14,18 +23,39 @@ variable "ssh_key" {
   sensitive = true
 }
 
-variable "default_zone" {
-  type    = string
-  default = "ru-central1-a"
+# --- # MODULE VARS ---
+variable "service_account_name" {
+  type = string
 }
 
+variable "bucket_name" {
+  type = string
+}
+variable "state_folder" {
+  type = string
+}
 
-variable "vm_labels" {
+variable "sa_role" {
+  type = string
+  default = "storage.editor"
+}
+# ---
+
+# --- VM VARS ---
+variable "net_name" {
+  type = string
+  default = "my-netw"
+}
+variable "subnet_name" {
+  type = string
+  default = "my-subn"
+}
+variable "subnet_cidr_blocks" {
   type = list(string)
-  default = [ ]
+  default = [ "10.10.1.0/24" ]
 }
 
-variable "default_vm_instance" {
+variable "vm" {
   type = object({
     image_family  = string
     platform_id   = string
@@ -54,18 +84,4 @@ variable "default_vm_instance" {
   }
 }
 
-# task 2. for vpc module
-variable "vpc_env" {
-  type = string
-  default = "development"  
-}
-
-variable "vpc_env_prod" {
-  type = string
-  default = "production"
-}
-
-# task 4
-variable "prod_subnets" { type = list(map(string)) }
-
-variable "dev_subnets" { type = list(map(string)) }
+# ---
