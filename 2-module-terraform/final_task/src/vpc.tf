@@ -1,6 +1,6 @@
 resource "yandex_vpc_network" "ayn_netw" {
   name      = var.vpc.network_name
-  folder_id = local.folder_id
+  folder_id = var.folder_id
 }
 locals {
   network_id = yandex_vpc_network.ayn_netw.id
@@ -17,34 +17,31 @@ locals {
 
 
 resource "yandex_vpc_security_group" "web_sg" {
-  name        = "web-sg"
-  description = "for web vms"
+  name        = var.sg.web.name
+  description = var.sg.web.description
+  labels      = var.sg.web.labels
+
   network_id  = local.network_id
 
-  ingress {
-    description = "Allow HTTPS"
-    protocol = "TCP"
-    port = 443
+  dynamic "ingress" {
+    for_each = var.sg.web.ingress_rules
+
+    content {
+      protocol       = lookup(ingress.value, "protocol", null)
+      description    = lookup(ingress.value, "description", null)
+      port           = lookup(ingress.value, "port", null)
+      v4_cidr_blocks = lookup(ingress.value, "v4_cidr", null)
+    }    
   }
-  ingress {
-    description = "Allow HTTP"
-    protocol = "TCP"
-    port = 80
-  }
-  ingress {
-    description = "Allow SSH"
-    protocol = "SSH"
-    port = 22
-  }
-  egress {
-    description = "Permit ANY"
-    protocol = "HTTP"
-    v4_cidr_blocks = [ "0.0.0.0/0" ]
-  }
-  egress {
-    description = "Permit ANY"
-    protocol = "HTTPS"
-    v4_cidr_blocks = [ "0.0.0.0/0" ]
+  dynamic "egress" {
+    for_each = var.sg.web.ingress_rules
+
+    content {
+      protocol       = lookup(egress.value, "protocol", null)
+      description    = lookup(egress.value, "description", null)
+      port           = lookup(egress.value, "port", null)
+      v4_cidr_blocks = lookup(egress.value, "v4_cidr", null)
+    }    
   }
 }
 
@@ -52,12 +49,17 @@ resource "yandex_vpc_security_group" "db_sg" {
   name = "db-sq"
   description = "for db cluster"
   network_id  = local.network_id
-  
-  ingress {
-    description = "Permit access only my web vms"
-    protocol = "TCP"
-    port     = 5432
-    security_group_id = yandex_vpc_security_group.web_sg.id
+
+  dynamic "ingress" {
+    for_each = var.sg.web.ingress_rules
+
+    content {
+      protocol       = lookup(ingress.value, "protocol", null)
+      description    = lookup(ingress.value, "description", null)
+      port           = lookup(ingress.value, "port", null)
+      v4_cidr_blocks = lookup(ingress.value, "v4_cidr", null)
+      security_group_id = yandex_vpc_security_group.web_sg.id
+    }
   }
 }
 

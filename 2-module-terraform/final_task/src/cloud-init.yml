@@ -6,3 +6,57 @@ users:
     sudo: ["ALL=(ALL) NOPASSWD:ALL"]
     ssh_authorized_keys:
       - ${ssh_public_key}
+package_update: true
+package_upgrade: false
+packages:
+  - nano
+  - nginx
+  - bastet
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+write_files:
+  - content: |
+      DB_NAME=${db_name}
+      DB_PASSWORD=${db_pwd}
+      DB_USER=${db_user}
+      DB_PORT=${db_port}
+      DB_HOST=${db_host}
+    owner: ${vm_user}:${vm_user}
+    permissions: '0600'
+    path: ${app_folder}/.env
+  - content: |
+      ${deploy_key}
+    path: /home/${vm_user}/.ssh/id_ed25519
+    owner: ${vm_user}:${vm_user}
+    permissions: '0600'
+runcmd:
+  # Add Docker’s official GPG key
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  
+  # Add the repository to Apt sources
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  
+  # Install Docker Engine
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  
+  # Enable and start Docker service
+  - systemctl enable docker
+  - systemctl start docker
+
+  - systemctl enable nginx
+  - systemctl start nginx
+
+  - usermod -aG ${vm_user} docker
+  
+  # 1. Сканирую ключи GitHub, чтобы не было запроса на подтверждение
+  - sudo -u ${vm_user} ssh-keyscan github.com >> /home/${vm_user}/.ssh/known_hosts
+  - sudo -u ${vm_user} git clone git@github.com:aykuli/terr-final-web-app.git ${app_folder}
+  - cd ${app_folder}
+  - sudo -u ${vm_user} docker compose up -d

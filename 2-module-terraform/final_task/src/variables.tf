@@ -2,24 +2,10 @@
 variable "cloud_id" {
   type = string
 }
-variable "folder" {
-  type = object({
-    name   = string
-    labels = map(string)
-  })
-  default = {
-    name = "terraform-final"
-    labels = {
-      "tutor":          "Elisey Ilin"
-      "tutor2":         "Eugene Mysyakov"
-      "learn_platform": "netology"
-      "program":        "DevOps"
-      "group":          "SHDEVOPS-29"
-      "learner":        "Aynur Shauerman"
-    }
-  }
-  description = "Folder for learning purpose"
+variable "folder_id" {
+  type = string
 }
+
 variable "keys_path" {
   type = string
 }
@@ -29,14 +15,23 @@ variable "default_zone" {
 }
 # ---
 
+# --- VMs ---
+variable "web_vm" {
+  type = object({
+    user            = string
+    ssh_key         = string
+    app_folder      = string
+    deploy_key_path = string
+  })
+}
+# ---
+
 # --- VPC ---
 variable "vpc" {
   type = object({
     network_name   = string
     subnet_name    = string
     v4_cidr_blocks = list(string)
-
-    sg_name        = string
   })
   default = {
     network_name   = "ayn-netw"
@@ -46,26 +41,23 @@ variable "vpc" {
 }
 
 variable "sg" {
-  type = object({
-    name        = string
-    description = string
+  type = map(object({
+    name          = string
+    description   = string
+    labels        = map(string)
     ingress_rules = list(object({
+      protocol    = string
+      description = optional(string)
+      v4_cidr     = list(string)
+      port        = number
+    }))
+    egress_rules = optional(list(object({
       protocol = string
       v4_cidr  = list(string)
       port     = number
-    }))
-    egress_rules = list(object({
-      protocol = string
-      v4_cidr  = list(string)
-      port     = number
-    }))
-  })
-  default = {
-    name = "ayn_sg"
-    description = "22, 80, 443 ports configs"
-    ingress_rules = []
-    egress_rules  = []
-  }
+    })))
+  }))
+
   description = <<-EOF
   1. Входящий трафик (Ingress)
     Если нужно разрешить доступ внутри подсети:
@@ -95,3 +87,66 @@ variable "sg" {
 }
 # ---
 
+# --- MDB POSTGRES ---
+variable "db_cluster_name" {
+  type = string
+}
+variable "db_cluster_env" {
+  type = string
+  default = "PRESTABLE"
+}
+variable "pg_version" {
+  type = number
+  default = 18
+}
+variable "pg_assign_public_ip" {
+  type = bool
+  default = false
+}
+variable "pg_config" {
+  type = object({
+    resources = object({
+      resource_preset_id = string
+      disk_type_id = string
+      disk_size = number
+    })
+    max_connections = number
+    web_sql_access  = bool
+  })
+  default = {
+    resources: {
+      resource_preset_id = "b1.medium"
+      disk_type_id = "network-hdd"
+      disk_size = 10
+    }
+    max_connections = 70
+    web_sql_access  = true
+  }
+}
+
+variable "db_user" {
+  type = string
+}
+variable "db_pwd" {
+  type = string
+}
+variable "db_name" {
+  type = string
+}
+variable "db_port" {
+  type = number
+  default = 6432
+}
+variable "db_host" {
+  type = string
+  default = "db"
+}
+variable "db_posix_locale" {
+  type = string
+  default = "ru_RU.UTF-8"
+}
+variable "db_extensions" {
+  type = list(string)
+  default = [ "uuid-ossp" ]
+}
+# ---
