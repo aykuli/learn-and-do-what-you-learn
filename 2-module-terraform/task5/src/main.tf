@@ -12,6 +12,8 @@ resource "yandex_vpc_subnet" "aynsubnet" {
   v4_cidr_blocks = var.subnet_cidr_blocks
 }
 
+
+
 resource "yandex_compute_instance" "vm" {
   name        = var.vm.name
   hostname    = var.vm.hostname
