@@ -1,0 +1,22 @@
+#cloud-config
+users:
+  - name: ${vm_user}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+package_update: true
+package_upgrade: false
+packages:
+  - nginx
+  - apt-transport-https
+  - ca-certificates # Ensures your system trusts the security certificates of the websites you download from.
+  - curl   # Used to fetch the GPG signing key from Nginx's servers
+  - gnupg  # Used to process and manage the digital security keys.
+  - lsb-release
+  - bastet # console game tetris for not to be bored
+
+runcmd:
+  - systemctl enable nginx
+  - systemctl start nginx
