@@ -1,36 +1,39 @@
 data "yandex_compute_image" "ubuntu" {
-  family = "ubuntu-2204-lts"
-}
-locals {
-  image_id = data.yandex_compute_image.ubuntu.id
+  family = var.web_vm.image_family
 }
 
 resource "yandex_compute_instance" "web" {
-  name = "web-vm"
-  hostname = "web-host"
-  folder_id = var.folder_id
-  platform_id = "standard-v1"
+  depends_on = [
+    yandex_vpc_subnet.ayn_subn,
+    yandex_vpc_security_group.web_sg,
+  yandex_mdb_postgresql_cluster.pg_cluster]
+
+  name        = var.web_vm.name
+  hostname    = var.web_vm.hostname
+  folder_id   = var.folder_id
+  platform_id = var.web_vm.platform_id
 
   resources {
-    cores = 2
-    memory = 1
+    cores         = 2
+    memory        = 2
     core_fraction = 5
   }
-  
+
   network_interface {
-    subnet_id = local.subnet_id
-    nat = true
+    security_group_ids = [yandex_vpc_security_group.web_sg.id]
+    subnet_id          = yandex_vpc_subnet.ayn_subn.id
+    nat                = var.web_vm.nat
   }
 
   boot_disk {
     initialize_params {
-      image_id = local.image_id
-      type = "network-hdd"
-      size = 10
+      image_id = data.yandex_compute_image.ubuntu.id
+      type     = var.web_vm.boot_disk_type
+      size     = var.web_vm.boot_disk_size
     }
   }
   scheduling_policy {
-    preemptible = true
+    preemptible = var.web_vm.preemptible
   }
 
   metadata = {
@@ -40,12 +43,13 @@ resource "yandex_compute_instance" "web" {
       app_folder     = var.web_vm.app_folder,
       deploy_key     = indent(6, file(var.web_vm.deploy_key_path))
 
-      db_name        = var.db_name,
-      db_pwd         = var.db_pwd,
-      db_user        = var.db_user,
-      db_port        = var.db_port,
-      db_host        = var.db_host,
+      db_name = var.db_name,
+      db_pwd  = var.db_pwd,
+      db_user = var.db_user,
+      db_port = var.db_port,
+      db_host = yandex_mdb_postgresql_cluster.pg_cluster.host[0].fqdn
     })
+    serial-port-enable = 1
   }
 
   # lifecycle {

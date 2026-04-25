@@ -10,7 +10,6 @@ package_update: true
 package_upgrade: false
 packages:
   - nano
-  - nginx
   - bastet
   - apt-transport-https
   - ca-certificates
@@ -19,44 +18,75 @@ packages:
   - lsb-release
   - git
 write_files:
-  - content: |
+  - path: /tmp/.env
+    owner: ${vm_user}:${vm_user}
+    permissions: '0600'
+    content: |
       DB_NAME=${db_name}
       DB_PASSWORD=${db_pwd}
       DB_USER=${db_user}
       DB_PORT=${db_port}
       DB_HOST=${db_host}
-    owner: ${vm_user}:${vm_user}
-    permissions: '0600'
-    path: ${app_folder}/.env
-  - content: |
+
+  - path: /tmp/id_ed25519
+    content: |
       ${deploy_key}
-    path: /home/${vm_user}/.ssh/id_ed25519
     owner: ${vm_user}:${vm_user}
     permissions: '0600'
+apt:
+  sources:
+    docker.sources:
+      source: |
+        Types: deb
+        URIs: https://download.docker.com/linux/ubuntu
+        Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+        Components: stable
+        Architectures: $(dpkg --print-architecture)
+        Signed-By: /etc/apt/keyrings/docker.asc
 runcmd:
-  # Add Docker’s official GPG key
-  - install -m 0755 -d /etc/apt/keyrings
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  - chmod a+r /etc/apt/keyrings/docker.asc
+  # Ждем, пока apt освободится (важно для облаков)
+  - while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 1; done
   
-  # Add the repository to Apt sources
-  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-  
-  # Install Docker Engine
-  - apt-get update
-  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-  
-  # Enable and start Docker service
-  - systemctl enable docker
-  - systemctl start docker
+  - su - ${vm_user}
+  - mkdir -p ${app_folder}
+  - chmod 700 /home/${vm_user}/.ssh
 
-  - systemctl enable nginx
-  - systemctl start nginx
+  - sudo mv /tmp/id_ed25519 /home/${vm_user}/.ssh
+  - sudo chown ${vm_user}:${vm_user} /home/${vm_user}/.ssh/id_ed25519
+  - chmod 700 /home/${vm_user}/.ssh/id_ed25519
+  # Setup Docker Official Repository
+  - sudo install -m 0755 -d /etc/apt/keyrings
+  - sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-  - usermod -aG ${vm_user} docker
-  
+# moved to apt block. check if it works
+    # Add the repository to Apt sources:
+  # - |
+  #   sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+  #   Types: deb
+  #   URIs: https://download.docker.com/linux/ubuntu
+  #   Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+  #   Components: stable
+  #   Architectures: $(dpkg --print-architecture)
+  #   Signed-By: /etc/apt/keyrings/docker.asc
+  #   EOF
+
+  # Install Docker CE and Plugins
+  - sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
   # 1. Сканирую ключи GitHub, чтобы не было запроса на подтверждение
-  - sudo -u ${vm_user} ssh-keyscan github.com >> /home/${vm_user}/.ssh/known_hosts
-  - sudo -u ${vm_user} git clone git@github.com:aykuli/terr-final-web-app.git ${app_folder}
+  - ssh-keyscan github.com >> /home/${vm_user}/.ssh/known_hosts
+  - git clone git@github.com:aykuli/terr-final-web-app.git ${app_folder}
+  
+  # Start the App
   - cd ${app_folder}
-  - sudo -u ${vm_user} docker compose up -d
+  - sudo mv /tmp/.env ${app_folder}
+  - sudo chown ${vm_user}:${vm_user} ${app_folder}/.env
+  
+  # Сертификат постгресса
+  - mkdir .postgresql
+  - curl -fsSL https://storage.yandexcloud.net/cloud-certs/CA.pem -o .postgresql/root.crt
+  - sudo apt update && sudo apt install --yes postgresql-client # todo удалить после отладки
+
+  - mkdir -p certbot/conf certbot/www
+  - sudo docker compose up -d

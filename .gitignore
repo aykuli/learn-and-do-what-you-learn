@@ -237,7 +237,7 @@ override.tf.json
 *_override.tf.json
 
 # Environment files
-.env
+*.env
 authorized_key.json
 
 *.ini

@@ -9,19 +9,33 @@ variable "folder_id" {
 variable "keys_path" {
   type = string
 }
+# Zone	Subnet Name	CIDR Block (Example)	Purpose
+# ru-central1-a	subnet-a	10.0.1.0/24	Resources in Zone A
+# ru-central1-b	subnet-b	10.0.2.0/24	Resources in Zone B
+# ru-central1-c	subnet-c	10.0.3.0/24	Resources in Zone C
 variable "default_zone" {
   type    = string
   default = "ru-central1-a"
 }
+
 # ---
 
 # --- VMs ---
 variable "web_vm" {
   type = object({
+    name            = string
+    hostname        = string
     user            = string
     ssh_key         = string
     app_folder      = string
     deploy_key_path = string
+
+    image_family   = string
+    platform_id    = string
+    boot_disk_type = string
+    boot_disk_size = number
+    preemptible    = bool
+    nat            = bool
   })
 }
 # ---
@@ -36,27 +50,55 @@ variable "vpc" {
   default = {
     network_name   = "ayn-netw"
     subnet_name    = "ayn-subn"
-    v4_cidr_blocks = [ "10.2.0.0/16" ]
+    v4_cidr_blocks = ["10.0.1.0/16"]
   }
 }
 
 variable "sg" {
-  type = map(object({
-    name          = string
-    description   = string
-    labels        = map(string)
-    ingress_rules = list(object({
-      protocol    = string
-      description = optional(string)
-      v4_cidr     = list(string)
-      port        = number
-    }))
-    egress_rules = optional(list(object({
-      protocol = string
-      v4_cidr  = list(string)
-      port     = number
-    })))
-  }))
+  type = object({
+    web = object({
+      name        = string
+      description = string
+      labels      = map(string)
+      ingress_rules = list(object({
+        protocol    = string
+        v4_cidr     = list(string)
+        port        = optional(number)
+        from_port   = optional(number)
+        to_port     = optional(number)
+        description = optional(string)
+      }))
+      egress_rules = optional(list(object({
+        protocol    = string
+        v4_cidr     = list(string)
+        port        = optional(number)
+        from_port   = optional(number)
+        to_port     = optional(number)
+        description = optional(string)
+      })))
+    }),
+    db = object({
+      name        = string
+      description = string
+      labels      = map(string)
+      ingress_rules = list(object({
+        protocol    = string
+        v4_cidr     = list(string)
+        port        = optional(number)
+        from_port   = optional(number)
+        to_port     = optional(number)
+        description = optional(string)
+      }))
+      egress_rules = optional(list(object({
+        protocol    = string
+        v4_cidr     = list(string)
+        port        = optional(number)
+        from_port   = optional(number)
+        to_port     = optional(number)
+        description = optional(string)
+      })))
+    })
+  })
 
   description = <<-EOF
   1. Входящий трафик (Ingress)
@@ -92,32 +134,32 @@ variable "db_cluster_name" {
   type = string
 }
 variable "db_cluster_env" {
-  type = string
+  type    = string
   default = "PRESTABLE"
 }
 variable "pg_version" {
-  type = number
-  default = 18
+  type    = number
+  default = 16
 }
 variable "pg_assign_public_ip" {
-  type = bool
+  type    = bool
   default = false
 }
 variable "pg_config" {
   type = object({
     resources = object({
       resource_preset_id = string
-      disk_type_id = string
-      disk_size = number
+      disk_type_id       = string
+      disk_size          = number
     })
     max_connections = number
     web_sql_access  = bool
   })
   default = {
-    resources: {
+    resources : {
       resource_preset_id = "b1.medium"
-      disk_type_id = "network-hdd"
-      disk_size = 10
+      disk_type_id       = "network-hdd"
+      disk_size          = 10
     }
     max_connections = 70
     web_sql_access  = true
@@ -134,19 +176,26 @@ variable "db_name" {
   type = string
 }
 variable "db_port" {
-  type = number
+  type    = number
   default = 6432
 }
 variable "db_host" {
-  type = string
+  type    = string
   default = "db"
 }
 variable "db_posix_locale" {
-  type = string
+  type    = string
   default = "ru_RU.UTF-8"
 }
 variable "db_extensions" {
-  type = list(string)
-  default = [ "uuid-ossp" ]
+  type    = list(string)
+  default = ["uuid-ossp"]
+}
+# ---
+
+# --- REGISTRY ---
+variable "registry_name" {
+  type    = string
+  default = "app-registry"
 }
 # ---
