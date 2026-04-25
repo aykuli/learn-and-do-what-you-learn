@@ -38,14 +38,19 @@ variable "web_vm" {
     nat            = bool
   })
 }
+
+variable "container_registry_name" {
+  type = string
+  default = "ayn-registry"
+}
+# ---
+
+# --- VPC ---
 variable "static_ip" {
   type = object({
     name = string
   })
 }
-# ---
-
-# --- VPC ---
 variable "vpc" {
   type = object({
     network_name   = string

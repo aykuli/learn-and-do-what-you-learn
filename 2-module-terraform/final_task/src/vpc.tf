@@ -1,3 +1,10 @@
+resource "yandex_vpc_address" "addr" {
+  name = var.static_ip.name
+  external_ipv4_address {
+    zone_id = var.default_zone
+  }
+}
+
 resource "yandex_vpc_network" "ayn_netw" {
   name      = var.vpc.network_name
   folder_id = var.folder_id

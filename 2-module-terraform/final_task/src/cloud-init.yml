@@ -19,7 +19,6 @@ packages:
   - git
 write_files:
   - path: /tmp/.env
-    owner: ${vm_user}:${vm_user}
     permissions: '0600'
     content: |
       DB_NAME=${db_name}
@@ -31,53 +30,58 @@ write_files:
   - path: /tmp/id_ed25519
     content: |
       ${deploy_key}
-    owner: ${vm_user}:${vm_user}
     permissions: '0600'
 apt:
   sources:
-    docker.sources:
-      source: |
-        Types: deb
-        URIs: https://download.docker.com/linux/ubuntu
-        Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
-        Components: stable
-        Architectures: $(dpkg --print-architecture)
-        Signed-By: /etc/apt/keyrings/docker.asc
+    docker.list:
+      source: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $RELEASE stable"
 runcmd:
   # Ждем, пока apt освободится (важно для облаков)
   - while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 1; done
-  
+
+  - echo '--------------------------'
+  - echo '1. START INSTALL DOCKER'
+  - echo '--------------------------'
+  # Docker
+  - mkdir -p /etc/apt/keyrings
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - echo '--------------------------'
+  - echo '2. FINISH INSTALL DOCKER'
+  - echo '--------------------------'
+
+  # key for github private repo
   - su - ${vm_user}
   - mkdir -p ${app_folder}
+  - chown ${vm_user}:${vm_user} ${app_folder}
   - chmod 700 /home/${vm_user}/.ssh
 
+  - echo '--------------------------'
+  - echo '3. SHOW ME CONTENT OF .ssh FOLDER'
+  - echo '--------------------------'
   - sudo mv /tmp/id_ed25519 /home/${vm_user}/.ssh
   - sudo chown ${vm_user}:${vm_user} /home/${vm_user}/.ssh/id_ed25519
   - chmod 700 /home/${vm_user}/.ssh/id_ed25519
-  # Setup Docker Official Repository
-  - sudo install -m 0755 -d /etc/apt/keyrings
-  - sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  - sudo chmod a+r /etc/apt/keyrings/docker.asc
+  - ls -alh /home/${vm_user}/.ssh
+  - echo '--------------------------'
 
-# moved to apt block. check if it works
-    # Add the repository to Apt sources:
-  # - |
-  #   sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
-  #   Types: deb
-  #   URIs: https://download.docker.com/linux/ubuntu
-  #   Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
-  #   Components: stable
-  #   Architectures: $(dpkg --print-architecture)
-  #   Signed-By: /etc/apt/keyrings/docker.asc
-  #   EOF
-
-  # Install Docker CE and Plugins
-  - sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-  # 1. Сканирую ключи GitHub, чтобы не было запроса на подтверждение
+  - echo '--------------------------'
+  - echo '4. DEAL with the GITHUB'
+  - echo '--------------------------'
   - ssh-keyscan github.com >> /home/${vm_user}/.ssh/known_hosts
-  - git clone git@github.com:aykuli/terr-final-web-app.git ${app_folder}
-  
+  - sudo chown aynur:aynur /home/aynur/.ssh/known_hosts
+
+  - |
+    sudo -u ${vm_user} bash -c 'GIT_SSH_COMMAND="ssh -i /home/${vm_user}/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+    git clone git@github.com:aykuli/terr-final-web-app.git ${app_folder}'
+  - echo '--------------------------'
+  - echo '5. SHOW ME DOWNLOADED GITHUB REPO'
+  - echo '--------------------------'
+  - ls -al ${app_folder}
+  - echo '--------------------------'
+
   # Start the App
   - cd ${app_folder}
   - sudo mv /tmp/.env ${app_folder}
@@ -85,8 +89,23 @@ runcmd:
   
   # Сертификат постгресса
   - mkdir .postgresql
+  - echo '--------------------------'
+  - echo '6. .postgresql FOLDER CREATED'
+  - echo '--------------------------'
+  - echo '7. INSTALL psql'
+  - echo '--------------------------'
+
   - curl -fsSL https://storage.yandexcloud.net/cloud-certs/CA.pem -o .postgresql/root.crt
   - sudo apt update && sudo apt install --yes postgresql-client # todo удалить после отладки
 
   - mkdir -p certbot/conf certbot/www
   - sudo docker compose up -d
+  # sudo docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d mymeddata.ru --email aykuli@ya.ru 
+  # docker run -it --rm --name certbot \
+  # -v "/etc/letsencrypt:/etc/letsencrypt" \
+  # -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
+  # -p 80:80 \
+  # certbot/certbot certonly --standalone -d example.com -d www.example.com
+
+  - docker ps >> /home/${vm_user}/deploy_status.txt
+

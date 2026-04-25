@@ -2,13 +2,6 @@ data "yandex_compute_image" "ubuntu" {
   family = var.web_vm.image_family
 }
 
-resource "yandex_vpc_address" "addr" {
-  name = var.static_ip.name
-  external_ipv4_address {
-    zone_id = var.default_zone
-  }
-}
-
 resource "yandex_compute_instance" "web" {
   depends_on = [
     yandex_vpc_subnet.ayn_subn,
@@ -46,11 +39,10 @@ resource "yandex_compute_instance" "web" {
 
   metadata = {
     user-data = templatefile("cloud-init.yml", {
-      vm_user        = var.web_vm.user
+      vm_user        = var.web_vm.user,
       ssh_public_key = var.web_vm.ssh_key,
       app_folder     = var.web_vm.app_folder,
-      deploy_key     = indent(6, file(var.web_vm.deploy_key_path))
-
+      deploy_key     = indent(6, file(var.web_vm.deploy_key_path)),
       db_name = var.db_name,
       db_pwd  = var.db_pwd,
       db_user = var.db_user,
@@ -65,3 +57,6 @@ resource "yandex_compute_instance" "web" {
   # }
 }
 
+resource "yandex_container_registry" "ayn_registry" {
+  name = var.container_registry_name
+}
