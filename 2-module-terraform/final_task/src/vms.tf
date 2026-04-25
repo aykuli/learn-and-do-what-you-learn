@@ -2,6 +2,13 @@ data "yandex_compute_image" "ubuntu" {
   family = var.web_vm.image_family
 }
 
+resource "yandex_vpc_address" "addr" {
+  name = var.static_ip.name
+  external_ipv4_address {
+    zone_id = var.default_zone
+  }
+}
+
 resource "yandex_compute_instance" "web" {
   depends_on = [
     yandex_vpc_subnet.ayn_subn,
@@ -22,6 +29,7 @@ resource "yandex_compute_instance" "web" {
   network_interface {
     security_group_ids = [yandex_vpc_security_group.web_sg.id]
     subnet_id          = yandex_vpc_subnet.ayn_subn.id
+    nat_ip_address     = yandex_vpc_address.addr.external_ipv4_address[0].address
     nat                = var.web_vm.nat
   }
 

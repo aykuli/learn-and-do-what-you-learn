@@ -38,6 +38,11 @@ variable "web_vm" {
     nat            = bool
   })
 }
+variable "static_ip" {
+  type = object({
+    name = string
+  })
+}
 # ---
 
 # --- VPC ---
