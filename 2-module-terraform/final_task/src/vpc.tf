@@ -9,6 +9,7 @@ resource "yandex_vpc_network" "ayn_netw" {
   name      = var.vpc.network_name
   folder_id = var.folder_id
 }
+
 resource "yandex_vpc_subnet" "ayn_subn" {
   name             = var.vpc.subnet_name
   network_id       = yandex_vpc_network.ayn_netw.id
@@ -58,7 +59,6 @@ resource "yandex_vpc_security_group" "db_sg" {
       protocol          = lookup(ingress.value, "protocol", null)
       description       = lookup(ingress.value, "description", null)
       port              = lookup(ingress.value, "port", null)
-      v4_cidr_blocks    = lookup(ingress.value, "v4_cidr", null)
       # Разрешить входящий трафик на порт базы данных только от ресурсов, которым назначена группа web-sg
       security_group_id = yandex_vpc_security_group.web_sg.id
     }

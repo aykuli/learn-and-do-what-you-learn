@@ -1,8 +1,38 @@
 # Итоговый проект модуля «Облачная инфраструктура. Terraform»
 
+[Задание 1](#задание-1-развертывание-инфраструктуры-в-yandex-cloud)
+  |--- [1.1 Ресурсы в VPC](#11-ресурсы-создаваемые-в-virtual-private-cloud-vpc)
+
 ## Задание 1. Развертывание инфраструктуры в Yandex Cloud
 
-* Создание Virtual Private Cloud (VPC)
+![](./assets/0.png)
+Рисунок 1 - Схема. сгенерироанная с расширением `Terraform Graph` в IDE `VSCode`:
+
+### 1.1. Ресурсы, создаваемые в Virtual Private Cloud (VPC)
+
+Структуру я создавала по иерархии зависимости и вложенности.
+* [vpc_network](https://vscode.dev/github/aykuli/learn-and-do-what-you-learn/blob/terraform-final/2-module-terraform/final_task/src/vpc.tf#L8) - ни от чего не зависит и ни во что не вложена.
+![](./assets/network.png)
+
+* [vpc_subnet](https://vscode.dev/github/aykuli/learn-and-do-what-you-learn/blob/terraform-final/2-module-terraform/final_task/src/vpc.tf#L13)  - дочерняя сущность от `vpc_network`, подсети вложены в сети
+![](./assets/subnet.png)
+
+* [vpc_security_group](https://vscode.dev/github/aykuli/learn-and-do-what-you-learn/blob/terraform-final/2-module-terraform/final_task/src/vpc.tf#L19)
+![](./assets/sgs.png)
+
+Группы безопасности я решила создать отдельно для web приложения (`web_sg`) и кластера базы данных (`db_sg`), так как поведение этиъ двух машин разное в сети должно быть:
+
+  * `web` - принимает запросы хоть откуда по портам 80, 443- должен иметь публичный адрес, должна быть возможность зайти под SSH по порту 22
+  ![](./assets/websg.png)
+
+  * `db` - должен быть максимально защищён, принимает запросы только от веб приложения по порту для БД.
+  ![](./assets/dbsg.png)
+
+* [vpc_address](https://vscode.dev/github/aykuli/learn-and-do-what-you-learn/blob/terraform-final/2-module-terraform/final_task/src/vpc.tf#L1). Решила взять статический адрес, доменное имя (mymeddata.ru)
+
+![](./assets/ip_addr.png)
+
+
 
 Вот такая схема нарисовала с `Terraform Graph` расширением `VSCode`:
 

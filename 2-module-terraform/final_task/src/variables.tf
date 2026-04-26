@@ -72,7 +72,7 @@ variable "sg" {
       labels      = map(string)
       ingress_rules = list(object({
         protocol    = string
-        v4_cidr     = list(string)
+        v4_cidr     = optional(list(string))
         port        = optional(number)
         from_port   = optional(number)
         to_port     = optional(number)
@@ -80,7 +80,7 @@ variable "sg" {
       }))
       egress_rules = optional(list(object({
         protocol    = string
-        v4_cidr     = list(string)
+        v4_cidr     = optional(list(string))
         port        = optional(number)
         from_port   = optional(number)
         to_port     = optional(number)
