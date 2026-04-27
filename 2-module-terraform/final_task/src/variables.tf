@@ -36,6 +36,11 @@ variable "web_vm" {
     boot_disk_size = number
     preemptible    = bool
     nat            = bool
+    resources      = object({
+      cores          = number
+      memory        = number
+      core_fraction = number
+    })
   })
 }
 
@@ -179,6 +184,18 @@ variable "pg_config" {
 variable "db_user" {
   type = string
 }
+variable "lockbox" {
+  type = object({
+    name    = string
+    entries = list(object({
+      key        = string
+      text_value = string
+    }))
+  })
+}
+variable "db_pswd_key" {
+  type = string
+}
 variable "db_pwd" {
   type = string
 }
@@ -207,5 +224,22 @@ variable "db_extensions" {
 variable "registry_name" {
   type    = string
   default = "app-registry"
+}
+# ---
+
+# --- DNS ---
+variable "dns_zone" {
+  type = object({
+    name        = string
+    zone        = string
+    is_public   = bool
+    description = optional(string)
+    recordset = list(object({
+      name = string
+      data = list(string)
+      type = string
+      ttl  = number
+    }))
+  })
 }
 # ---

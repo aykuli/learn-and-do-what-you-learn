@@ -55,14 +55,13 @@ runcmd:
   # key for github private repo
   - su - ${vm_user}
   - mkdir -p ${app_folder}
-  - chown ${vm_user}:${vm_user} ${app_folder}
   - chmod 700 /home/${vm_user}/.ssh
 
   - echo '--------------------------'
   - echo '3. SHOW ME CONTENT OF .ssh FOLDER'
   - echo '--------------------------'
-  - sudo mv /tmp/id_ed25519 /home/${vm_user}/.ssh
-  - sudo chown ${vm_user}:${vm_user} /home/${vm_user}/.ssh/id_ed25519
+  - mv /tmp/id_ed25519 /home/${vm_user}/.ssh
+  - chown ${vm_user}:${vm_user} /home/${vm_user}/.ssh/id_ed25519
   - chmod 700 /home/${vm_user}/.ssh/id_ed25519
   - ls -alh /home/${vm_user}/.ssh
   - echo '--------------------------'
@@ -71,7 +70,7 @@ runcmd:
   - echo '4. DEAL with the GITHUB'
   - echo '--------------------------'
   - ssh-keyscan github.com >> /home/${vm_user}/.ssh/known_hosts
-  - sudo chown aynur:aynur /home/aynur/.ssh/known_hosts
+  - chown aynur:aynur /home/aynur/.ssh/known_hosts
 
   - |
     sudo -u ${vm_user} bash -c 'GIT_SSH_COMMAND="ssh -i /home/${vm_user}/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
@@ -84,28 +83,16 @@ runcmd:
 
   # Start the App
   - cd ${app_folder}
-  - sudo mv /tmp/.env ${app_folder}
-  - sudo chown ${vm_user}:${vm_user} ${app_folder}/.env
+  - mv /tmp/.env ${app_folder}
   
   # Сертификат постгресса
   - mkdir .postgresql
-  - echo '--------------------------'
-  - echo '6. .postgresql FOLDER CREATED'
-  - echo '--------------------------'
-  - echo '7. INSTALL psql'
-  - echo '--------------------------'
-
   - curl -fsSL https://storage.yandexcloud.net/cloud-certs/CA.pem -o .postgresql/root.crt
-  - sudo apt update && sudo apt install --yes postgresql-client # todo удалить после отладки
-
   - mkdir -p certbot/conf certbot/www
-  - sudo docker compose up -d
-  # sudo docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d mymeddata.ru --email aykuli@ya.ru 
-  # docker run -it --rm --name certbot \
-  # -v "/etc/letsencrypt:/etc/letsencrypt" \
-  # -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
-  # -p 80:80 \
-  # certbot/certbot certonly --standalone -d example.com -d www.example.com
+  - chown -R ${vm_user}:${vm_user} ${app_folder}
+  - usermod -aG docker ${vm_user}
+  - docker compose up -d
+  # docker run -it --rm --name certbot -v "certbot/conf:/etc/letsencrypt" -v "/var/lib/letsencrypt:/var/lib/letsencrypt" -p 80:80 certbot/certbot certonly --standalone -d mymeddata.ru -d mymeddata.ru
 
   - docker ps >> /home/${vm_user}/deploy_status.txt
 

@@ -23,11 +23,10 @@ resource "yandex_mdb_postgresql_cluster" "pg_cluster" {
   }
 }
 
-
 resource "yandex_mdb_postgresql_user" "pg_manager" {
   cluster_id = yandex_mdb_postgresql_cluster.pg_cluster.id
   name       = var.db_user
-  password   = var.db_pwd
+  password   = yandex_lockbox_secret_version.v1.entries[0].text_value
 }
 
 resource "yandex_mdb_postgresql_database" "pg_db" {

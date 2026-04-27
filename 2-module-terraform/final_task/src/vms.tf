@@ -3,10 +3,8 @@ data "yandex_compute_image" "ubuntu" {
 }
 
 resource "yandex_compute_instance" "web" {
-  depends_on = [
-    yandex_vpc_subnet.ayn_subn,
-    yandex_vpc_security_group.web_sg,
-  yandex_mdb_postgresql_cluster.pg_cluster]
+  depends_on = [  yandex_mdb_postgresql_cluster.pg_cluster,
+                  yandex_lockbox_secret_version.v1 ]
 
   name        = var.web_vm.name
   hostname    = var.web_vm.hostname
@@ -14,9 +12,9 @@ resource "yandex_compute_instance" "web" {
   platform_id = var.web_vm.platform_id
 
   resources {
-    cores         = 2
-    memory        = 2
-    core_fraction = 5
+    cores         = var.web_vm.resources.cores
+    memory        = var.web_vm.resources.memory
+    core_fraction = var.web_vm.resources.core_fraction
   }
 
   network_interface {
@@ -44,19 +42,11 @@ resource "yandex_compute_instance" "web" {
       app_folder     = var.web_vm.app_folder,
       deploy_key     = indent(6, file(var.web_vm.deploy_key_path)),
       db_name = var.db_name,
-      db_pwd  = var.db_pwd,
+      db_pwd  = yandex_lockbox_secret_version.v1.entries[0].text_value,
       db_user = var.db_user,
       db_port = var.db_port,
       db_host = yandex_mdb_postgresql_cluster.pg_cluster.host[0].fqdn
     })
-    serial-port-enable = 1
   }
-
-  # lifecycle {
-  #   replace_triggered_by = [ terrafrom_data.cloud_init_config ]
-  # }
 }
 
-resource "yandex_container_registry" "ayn_registry" {
-  name = var.container_registry_name
-}
