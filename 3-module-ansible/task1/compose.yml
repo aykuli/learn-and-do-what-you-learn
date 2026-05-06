@@ -1,0 +1,30 @@
+services:
+  centos:
+    container_name: centos7
+    image: quay.io/centos/centos:stream9
+    command: /bin/bash -c "dnf install -y python3.14 && dnf clean all && tail -f /dev/null"
+    healthcheck:
+      test: ["CMD", "python3", "--version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  ubuntu:
+    container_name: ubuntu
+    image: ubuntu:rolling
+    command: /bin/bash -c "apt-get update && apt-get install -y python3 && tail -f /dev/null"
+    healthcheck:
+      test: ["CMD", "python3", "--version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  fedora:
+    container_name: fedora
+    image: pycontribs/fedora
+    tty: true
+    stdin_open: true
+    healthcheck:
+      test: ["CMD", "python3", "--version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
