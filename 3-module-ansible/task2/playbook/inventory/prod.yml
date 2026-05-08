@@ -1,0 +1,7 @@
+---
+vm_group:
+  hosts:
+    clickhouse:
+      ansible_host: "{{ lookup('ansible.builtin.env', 'CLICKHOUSE_IP') }}"
+      ansible_user: "{{ lookup('ansible.builtin.env', 'CLICKHOUSE_USER') }}"
+      ansible_become: true
