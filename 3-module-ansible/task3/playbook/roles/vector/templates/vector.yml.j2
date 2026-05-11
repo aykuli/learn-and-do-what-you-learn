@@ -1,0 +1,27 @@
+sources:
+  journal_logs:
+    type: journald
+
+transforms:
+  parse_logs:
+    type: remap
+    inputs:
+      - journal_logs
+    source: |
+      . = {
+        "timestamp": .timestamp,
+        "message": string!(.message)
+      }
+
+
+sinks:
+  clickhouse_output:
+    type: clickhouse
+    inputs:
+      - parse_logs  # Важно: теперь вход берется из транформации!
+    endpoint: "http://{{ hostvars[groups['clickhouse'][0]]['ansible_host'] }}:8123"
+    database: logs
+    table: logging
+    skip_unknown_fields: true
+    encoding:
+      timestamp_format: unix 

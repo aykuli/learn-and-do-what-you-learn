@@ -1,0 +1,4 @@
+---
+web_root: "/var/www/lighthouse"
+nginx_listen_port: 80
+nginx_server_name: "lighthouse.local"

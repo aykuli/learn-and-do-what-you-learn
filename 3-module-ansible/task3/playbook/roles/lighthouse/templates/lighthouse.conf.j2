@@ -1,0 +1,15 @@
+server {
+    listen {{ nginx_listen_port | default(80) }};
+    server_name {{ nginx_server_name | default('localhost') }};
+
+    root {{ web_root }};
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # Optional: Log paths can also be variables
+    access_log /var/log/nginx/lighthouse_access.log;
+    error_log /var/log/nginx/lighthouse_error.log;
+}

@@ -1,0 +1,52 @@
+---
+- name: Install nginx and git
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - git
+    state: present
+    update_cache: true
+
+- name: Apply nginx conf
+  ansible.builtin.template:
+    src: lighthouse.conf.j2
+    dest: /etc/nginx/sites-available/lighthouse
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Enable lighthouse site in nginx
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/lighthouse
+    dest: /etc/nginx/sites-enabled/default # Overwrites the default Nginx page
+    state: link
+    force: true
+  notify: Reload nginx
+
+- name: Add lighthouse directory to git safe directories
+  ansible.builtin.command: git config --global --add safe.directory {{ web_root }}
+  changed_when: false
+
+- name: Download lighthouse
+  ansible.builtin.git:
+    repo: https://github.com/VKCOM/lighthouse
+    dest: "{{ web_root }}"
+    version: master
+    depth: 1
+    force: true
+
+- name: Set ownership to web server user
+  ansible.builtin.file:
+    path: "{{ web_root }}"
+    owner: www-data
+    group: www-data
+    recurse: true
+
+- name: Configure Lighthouse to connect to Clickhouse
+  ansible.builtin.template:
+    src: lighthouse_config.js.j2
+    dest: "{{ web_root }}/config.js"
+    owner: www-data
+    group: www-data
+    mode: '0644'

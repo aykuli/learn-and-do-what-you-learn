@@ -1,0 +1,11 @@
+// This file is managed by Ansible
+var config = {
+    "servers": [
+        {
+            "name": "Production ClickHouse",
+            "host": "http://{{ hostvars['clickhouse'].ansible_host }}:8123",
+            "user": "default",
+            "password": ""
+        }
+    ]
+};

@@ -1,0 +1,85 @@
+---
+- name: Download Clickhouse distributions
+  block:
+    - name: Get distrib
+      ansible.builtin.get_url:
+        url: "https://packages.clickhouse.com/deb/pool/main/c/{{ item }}/{{ item }}_{{ clickhouse_version }}_all.deb"
+        dest: "/tmp/{{ item }}.deb"
+        mode: "0744"
+      with_items: "{{ clickhouse_packages }}"
+  rescue:
+    - name: Get distrib
+      ansible.builtin.get_url:
+        url: "https://packages.clickhouse.com/deb/pool/main/c/clickhouse-common-static/clickhouse-common-static_{{ clickhouse_version }}_amd64.deb"
+        dest: "/tmp/clickhouse-common-static.deb"
+        mode: "0744"
+- name: Install clickhouse distrib
+  ansible.builtin.apt:
+    deb: "/tmp/{{ item }}.deb"
+  loop: "{{ clickhouse_packages }}"
+  notify: Restart ClickHouse
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+- name: Prepare ClickHouse users config (to avoid interactive password prompt)
+  ansible.builtin.file:
+    path: /etc/clickhouse-server/users.d
+    state: directory
+    mode: '0755'
+
+- name: Set default user password policy
+  ansible.builtin.copy:
+    dest: /etc/clickhouse-server/users.d/default-user.xml
+    content: |
+      <clickhouse>
+          <users>
+              <default>
+                  <!-- Оставьте пустым для беспарольного входа или впишите хэш -->
+                  <password></password>
+                  <networks>
+                      <ip>::/0</ip>
+                  </networks>
+              </default>
+          </users>
+      </clickhouse>
+    mode: '0644'
+  notify: Restart ClickHouse
+
+- name: Enable global listen_host
+  ansible.builtin.lineinfile:
+    path: /etc/clickhouse-server/config.xml
+    regexp: '<listen_host>{{ item }}</listen_host>'
+    line: '<listen_host>{{ item }}</listen_host>'
+  loop:
+    - "0.0.0.0"
+    - "::1"
+  notify: Restart ClickHouse
+
+- name: Comment out restrictive listen_host entries
+  ansible.builtin.replace:
+    path: /etc/clickhouse-server/config.xml
+    # This matches <listen_host>::1</listen_host> or 127.0.0.1
+    regexp: '^(\s*)<listen_host>(::1|127.0.0.1)</listen_host>'
+    replace: '\1<!-- <listen_host>\2</listen_host> -->'
+
+- name: Ensure ClickHouse is started
+  ansible.builtin.service:
+    name: clickhouse-server
+    state: started
+    enabled: true
+
+- name: Wait for ClickHouse to actually start listening
+  ansible.builtin.wait_for:
+    port: 9000
+    delay: 3
+    timeout: 30
+
+- name: Create database
+  ansible.builtin.command: "clickhouse-client -q 'create database if not exists logs;'"
+  register: clickhouse_result
+  until: clickhouse_result.rc == 0
+  retries: 5
+  delay: 3
+- name: Create journal table in CLickhouse
+  ansible.builtin.command: clickhouse-client -q "CREATE TABLE logs.logging (timestamp DateTime, message String) ENGINE=MergeTree() ORDER BY timestamp;"
+  register: clickhouse_table_result
+  changed_when: "'already exists' not in clickhouse_table_result.stderr"

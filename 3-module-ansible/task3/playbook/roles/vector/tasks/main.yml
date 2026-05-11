@@ -1,0 +1,28 @@
+---
+- name: Get vector distrib
+  ansible.builtin.get_url:
+    url: "https://packages.timber.io/vector/{{ vector_version }}/vector_{{ vector_version }}-1_amd64.deb"
+    dest: "./vector.deb"
+    mode: "0744"
+
+- name: Install vector package
+  ansible.builtin.apt:
+    deb: "./vector.deb"
+
+- name: Ensure Vector data directory exists with correct permissions
+  ansible.builtin.file:
+    path: /var/lib/vector
+    state: directory
+    owner: vector
+    group: vector
+    mode: "0750"
+    recurse: true # Important if subdirectories already exist with wrong owner
+
+- name: Create vector config from template
+  ansible.builtin.template:
+    src: "vector.yml.j2"
+    dest: "/etc/vector/vector.yaml"
+    mode: "0644"
+    owner: vector
+    group: vector
+  notify: Restart vector service
