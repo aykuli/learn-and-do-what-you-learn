@@ -1,0 +1,98 @@
+#cloud-config
+users:
+  - name: ${vm_user}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+package_update: true
+package_upgrade: false
+packages:
+  - nano
+  - bastet
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+write_files:
+  - path: /tmp/.env
+    permissions: '0600'
+    content: |
+      DB_NAME=${db_name}
+      DB_PASSWORD=${db_pwd}
+      DB_USER=${db_user}
+      DB_PORT=${db_port}
+      DB_HOST=${db_host}
+
+  - path: /tmp/id_ed25519
+    content: |
+      ${deploy_key}
+    permissions: '0600'
+apt:
+  sources:
+    docker.list:
+      source: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $RELEASE stable"
+runcmd:
+  # Ждем, пока apt освободится (важно для облаков)
+  - while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 1; done
+
+  - echo '--------------------------'
+  - echo '1. START INSTALL DOCKER'
+  - echo '--------------------------'
+  # Docker
+  - mkdir -p /etc/apt/keyrings
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - echo '--------------------------'
+  - echo '2. FINISH INSTALL DOCKER'
+  - echo '--------------------------'
+
+  # key for github private repo
+  - su - ${vm_user}
+  - mkdir -p ${app_folder}
+  - chmod 700 /home/${vm_user}/.ssh
+
+  - echo '--------------------------'
+  - echo '3. SHOW ME CONTENT OF .ssh FOLDER'
+  - echo '--------------------------'
+  - mv /tmp/id_ed25519 /home/${vm_user}/.ssh
+  - chown ${vm_user}:${vm_user} /home/${vm_user}/.ssh/id_ed25519
+  - chmod 700 /home/${vm_user}/.ssh/id_ed25519
+  - ls -alh /home/${vm_user}/.ssh
+  - echo '--------------------------'
+
+  - echo '--------------------------'
+  - echo '4. DEAL with the GITHUB'
+  - echo '--------------------------'
+  - ssh-keyscan github.com >> /home/${vm_user}/.ssh/known_hosts
+  - chown aynur:aynur /home/aynur/.ssh/known_hosts
+
+  - |
+    sudo -u ${vm_user} bash -c 'GIT_SSH_COMMAND="ssh -i /home/${vm_user}/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+    git clone git@github.com:aykuli/terr-final-web-app.git ${app_folder}'
+  - echo '--------------------------'
+  - echo '5. SHOW ME DOWNLOADED GITHUB REPO'
+  - echo '--------------------------'
+  - ls -al ${app_folder}
+  - echo '--------------------------'
+
+  # Start the App
+  - cd ${app_folder}
+  - mv /tmp/.env ${app_folder}
+  
+  # Сертификат постгресса
+  - mkdir .postgresql
+  - curl -fsSL https://storage.yandexcloud.net/cloud-certs/CA.pem -o .postgresql/root.crt
+  - mkdir -p certbot/conf certbot/www
+  - chown -R ${vm_user}:${vm_user} ${app_folder}
+  - usermod -aG docker ${vm_user}
+  - docker compose up -d
+  # docker run -it --rm --name certbot -v "certbot/conf:/etc/letsencrypt" -v "/var/lib/letsencrypt:/var/lib/letsencrypt" -p 80:80 certbot/certbot certonly --standalone -d mymeddata.ru -d mymeddata.ru
+
+  - docker ps >> /home/${vm_user}/deploy_status.txt
+

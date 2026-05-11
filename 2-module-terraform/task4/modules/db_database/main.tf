@@ -32,3 +32,4 @@ resource "yandex_mdb_mysql_user" "user" {
 
   authentication_plugin = var.auth_plugin
 }
+
