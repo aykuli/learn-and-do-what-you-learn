@@ -1,0 +1,25 @@
+---
+- name: Install Clickhouse
+  hosts: clickhouse
+  remote_user: root
+  roles:
+    - ansible-clickhouse
+  tasks:
+    - name: Create structural table inside the logs database
+      ansible.builtin.command: >
+        clickhouse-client -q "
+        CREATE TABLE IF NOT EXISTS logs.applogs (
+            timestamp DateTime64(3), message String
+        ) ENGINE = MergeTree() ORDER BY timestamp;"
+      register: clickhouse_table_result
+      changed_when: "'already exists' not in clickhouse_table_result.stderr"
+
+- name: Install Lighthouse
+  hosts: lighthouse
+  roles:
+    - lighthouse
+
+- name: Install Vector
+  hosts: vector
+  roles:
+    - vector

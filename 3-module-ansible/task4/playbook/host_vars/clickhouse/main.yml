@@ -1,0 +1,22 @@
+---
+clickhouse_listen_host:
+  - "0.0.0.0"
+
+clickhouse_dbs_custom:
+  - { name: logs }
+clickhouse_users_custom:
+  - name: "ayn"
+    password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          33323866313966336664643531643866653433336337633730383231626233643338353635323934
+          3232333662396465333162303532316639663431663137390a326132316566633137366338386565
+          32643435336638376563383634373762643661376165656439353636366537333033393236366338
+          3762356161633537300a653432336234646538386436353064356539626564383633303562666634
+          6230
+    profile: "default"
+    quota: "default"
+    dbs:
+      - logs
+    networks:
+      - "::/0"
+    comment: "Administrator access from specific remote IP"
