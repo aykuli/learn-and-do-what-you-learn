@@ -1,0 +1,18 @@
+clickhouse:
+  hosts:
+    clickhouse:
+      ansible_host:
+      ansible_user:
+      ansible_become: true
+lighthouse:
+  hosts:
+    lighthouse:
+      ansible_host:
+      ansible_user:
+      ansible_become: true
+vector:
+  hosts:
+    vector:
+      ansible_host:
+      ansible_user:
+      ansible_become: true

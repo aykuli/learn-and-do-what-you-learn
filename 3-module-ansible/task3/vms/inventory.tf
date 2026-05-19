@@ -10,6 +10,6 @@ ${vm["name"]}:
 %{ endfor ~}
   EOT
 
-  filename = "../${path.module}/playbook/inventory/prod.yml"
+  filename = "../${path.module}/../task5/playbook/inventory/prod.yml"
 }
 
