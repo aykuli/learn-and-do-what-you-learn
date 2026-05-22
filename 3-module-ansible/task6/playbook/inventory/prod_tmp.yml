@@ -1,0 +1,21 @@
+clickhouse:
+  hosts:
+    clickhouse:
+      ansible_host: 156.456.56
+      ansible_user: ubuntu
+      ansible_become: true
+
+lighthouse:
+  hosts:
+    lighthouse:
+      ansible_host: 156.456.55
+      ansible_user: ubuntu
+      ansible_become: true
+
+vector:
+  hosts:
+    vector:
+      ansible_host: 156.456.54
+      ansible_user: ubuntu
+      ansible_become: true
+

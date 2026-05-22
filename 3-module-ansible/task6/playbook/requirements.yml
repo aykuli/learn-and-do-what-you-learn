@@ -1,0 +1,16 @@
+---
+- src: git@github.com:AlexeySetevoi/ansible-clickhouse.git
+  scm: git
+  version: "1.13"
+- src: git@github.com:aykuli/vector-role.git
+  scm: git
+  version: "1.0.0"
+  name: vector
+- src: git@github.com:aykuli/lighthouse-role.git
+  scm: git
+  version: "0.0.1"
+  name: lighthouse
+- src: git@github.com:aykuli/aykuli.yandex_cloud_elk.git
+  scm: git
+  version: "1.0.0"
+  name: aykuli.yandex_cloud_elk 
