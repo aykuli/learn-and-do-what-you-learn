@@ -13,7 +13,7 @@ packages:
   - apt-transport-https
   - ca-certificates # Ensures your system trusts the security certificates of the websites you download from.
   - curl   # Used to fetch the GPG signing key from Nginx's servers
-  - gnupg  # Used to process and manage the digital security keys.
+  - gnupg  # Used to procemss and manage the digital security keys.
   - lsb-release
   - bastet # console game tetris for not to be bored
 

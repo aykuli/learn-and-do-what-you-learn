@@ -26,3 +26,4 @@ output "external_ip" {
   value = yandex_compute_instance.aynur_vm_from_terra_resource.network_interface.0.nat_ip_address
 }
 
+

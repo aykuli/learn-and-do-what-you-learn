@@ -1,0 +1,27 @@
+#cloud-config
+users:
+  - name: ${vm_user}
+    groups: sudo
+    shell: /bin/bash
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    ssh-authorized-keys:
+      - ${ssh_keys}
+
+write_files:
+  - path: /etc/compose/compose.yaml
+    content: |
+      services:
+        teamcity-agent:
+          image: jetbrains/teamcity-agent:latest
+          container_name: teamcity-agent
+          environment:
+            - SERVER_URL=http://${server_ip}:8111
+          volumes:
+            - /data/teamcity_agent/conf:/data/teamcity_agent/conf
+            - /var/run/docker.sock:/var/run/docker.sock
+          restart: always
+
+runcmd:
+  - mkdir -p /data/teamcity_agent/conf
+  - chown -R 1000:1000 /data/teamcity_agent/conf
+  - sudo docker compose -f /etc/compose/compose.yaml up -d

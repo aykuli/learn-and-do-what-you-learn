@@ -250,3 +250,4 @@ secrets
 2-module-terraform/task4/vault/*.tf
 3-module-ansible/task*/playbook/roles/*
 .vault-pass
+authorize_key.json
