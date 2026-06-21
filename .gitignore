@@ -251,3 +251,5 @@ secrets
 3-module-ansible/task*/playbook/roles/*
 .vault-pass
 authorize_key.json
+volumes
+compose copy 2.yml

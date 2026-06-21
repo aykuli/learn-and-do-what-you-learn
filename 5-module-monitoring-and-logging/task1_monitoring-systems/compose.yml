@@ -1,0 +1,67 @@
+networks:
+  tick-net:
+    driver: bridge
+
+services:
+  # Сердце стека: База данных + Интерфейс Chronograf + Движок Kapacitor
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=edu
+      - DOCKER_INFLUXDB_INIT_PASSWORD=edu1234567890
+      - DOCKER_INFLUXDB_INIT_ORG=aynur
+      - DOCKER_INFLUXDB_INIT_BUCKET=metrics
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=aynur1234567890
+    networks:
+      - tick-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Агент сбора метрик
+  telegraf:
+    image: telegraf:1.30-alpine
+    privileged: true
+    user: "999:123"
+    container_name: telegraf
+    restart: unless-stopped
+    volumes:
+      # Прокидываем конфигурационный файл
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      # Прокидываем системные директории хоста, чтобы Telegraf мог читать реальные метрики RAM/CPU/Inodes машины
+      - /var/run/docker.sock:/var/run/docker.sock:Z
+      - /:/hostfs:ro
+    environment:
+      - HOST_ETC=/hostfs/etc
+      - HOST_PROC=/hostfs/proc
+      - HOST_SYS=/hostfs/sys
+      - HOST_VAR=/hostfs/var
+      - HOST_RUN=/hostfs/run
+      - HOST_MOUNT_PREFIX=/hostfs
+      - HOST_NAME=aynur-telegraf-agent
+      - INFLUX_HOST=http://influxdb:8086
+      - INFLUX_TOKEN=aynur1234567890
+      - INFLUX_ORG=aynur
+      - INFLUX_BUCKET=metrics
+    networks:
+      - tick-net
+    ports:
+      - "8092:8092/udp"
+      - "8094:8094"
+      - "8125:8125/udp"
+    depends_on:
+      - influxdb
+
+volumes:
+  influxdb-data:
+  influxdb-config:
