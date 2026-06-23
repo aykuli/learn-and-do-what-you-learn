@@ -1,0 +1,63 @@
+networks:
+  monitoring:
+    driver: bridge
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
+services:
+  nodeexporter:
+    image: prom/node-exporter:master
+    container_name: node_exporter
+    pid: host          # Without pid: host, Node Exporter cannot inspect processes running directly on your host machine
+    network_mode: host # Gives Node Exporter access to real host interfaces (eth0, wlan0, etc.)
+    expose:
+      - 9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+
+  prometheus:
+    image: prom/prometheus:v3.5.4
+    container_name: prometheus
+    networks:
+      - monitoring
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    depends_on:
+      - nodeexporter
+
+  grafana:
+    image: grafana/grafana:11.6.15-ubuntu
+    container_name: grafana
+    networks:
+      - monitoring
+    ports:
+      - '3000:3000'
+      - '8080:8080'
+    volumes:
+      - grafana_data:/var/lib/grafana
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_NAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    depends_on:
+      - prometheus

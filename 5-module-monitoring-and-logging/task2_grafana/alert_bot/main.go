@@ -1,0 +1,106 @@
+//go:build local
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"log"
+	"io"
+	"net/http"
+	"os"
+	"github.com/lpernett/godotenv"
+	"github.com/mymmrac/telego"
+)
+
+type GrafanaAlert struct {
+	Title    string `json:"title"`
+	Message  string `json:"message"`
+	State    string `json:"state"` // Alerting, OK, No Data
+	RuleName string `json:"ruleName"`
+	RuleURL  string `json:"ruleUrl"`
+}
+
+func main() {
+	// 1. Загружаем переменные из .env
+	if err := godotenv.Load(); err != nil {
+		log.Println("Предупреждение: .env файл не найден, используются системные переменные")
+	}
+
+	botToken := os.Getenv("BOT_TOKEN")
+	chatIDStr := os.Getenv("TELEGRAM_CHAT_ID")
+
+	if botToken == "" || chatIDStr == "" {
+		log.Fatal("Ошибка: BOT_TOKEN или TELEGRAM_CHAT_ID не заданы в .env")
+	}
+
+	targetChatID, err := strconv.ParseInt(chatIDStr, 10, 64)
+	if err != nil {
+		log.Fatalf("Ошибка: некорректный TELEGRAM_CHAT_ID: %v", err)
+	}
+
+	// 2. Инициализируем Telegram-бота
+	bot, err := telego.NewBot(botToken)
+	if err != nil {
+		log.Fatalf("Ошибка инициализации бота: %v", err)
+	}
+
+	// 3. Настраиваем HTTP-эндпоинт для приема алертов
+	http.HandleFunc("/alert", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("alert worked")
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Читаем тело запроса от Grafana
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Failed to read body", http.StatusBadRequest)
+			return
+		}
+		defer r.Body.Close()
+
+		// Парсим JSON от Grafana
+		var alert GrafanaAlert
+		if err := json.Unmarshal(body, &alert); err != nil {
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			return
+		}
+
+		// Формируем красивое сообщение
+		statusEmoji := "🟢"
+		if alert.State == "Alerting" {
+			statusEmoji = "🔴"
+		}
+
+		text := fmt.Sprintf(
+			"%s *Локальный Графана Алерт!*\n\n*Правило:* %s\n*Статус:* %s\n*Сообщение:* %s\n\n[Открыть в Grafana](%s)",
+			statusEmoji, alert.RuleName, alert.State, alert.Message, alert.RuleURL,
+		)
+
+		// Отправляем сообщение в Telegram
+		_, err = bot.SendMessage(context.Background(), &telego.SendMessageParams{
+			ChatID:    telego.ChatID{ID: targetChatID},
+			Text:      text,
+			ParseMode: telego.ModeMarkdown,
+		})
+		if err != nil {
+			log.Printf("Ошибка отправки в Telegram: %v\n", err)
+			http.Error(w, "Failed to send alert to Telegram", http.StatusInternalServerError)
+			return
+		}
+
+		// Отвечаем Grafana, что всё ок
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"success"}`))
+	})
+
+	// 4. Запускаем локальный веб-сервер на порту 8080
+	port := "0.0.0.0:8080"
+	log.Printf("Сервер бота запущен локально на http://localhost%s/alert\n", port)
+	if err := http.ListenAndServe(port, nil); err != nil {
+		log.Fatalf("Ошибка запуска сервера: %v", err)
+	}
+}
