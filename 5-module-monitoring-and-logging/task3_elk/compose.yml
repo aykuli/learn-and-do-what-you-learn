@@ -1,0 +1,110 @@
+networks:
+  elknet:
+    driver: bridge
+volumes:
+  els-hot_data:
+  els-warm_data:
+services:
+  els-hot:
+    image: elasticsearch:9.3.6
+    container_name: els-hot
+    volumes:
+      - els-hot_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elknet
+    environment:
+      - node.name=els-hot
+      - cluster.name=elk-cluster-v9
+      - cluster.initial_master_nodes=els-hot,els-warm
+      - discovery.seed_hosts=els-warm
+      - node.roles=master,data_hot,data_content,ingest
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+
+  els-warm:
+    image: elasticsearch:9.3.6
+    container_name: els-warm
+    volumes:
+      - els-warm_data:/usr/share/elasticsearch/data
+    networks:
+      - elknet
+    environment:
+      - node.name=els-warm
+      - cluster.name=elk-cluster-v9
+      - cluster.initial_master_nodes=els-hot,els-warm
+      - discovery.seed_hosts=els-hot
+      - node.roles=master,data_warm
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+
+  kibana:
+    image: kibana:9.3.6
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    networks:
+      - elknet
+    environment:
+      - ELASTICSEARCH_HOSTS=http://els-hot:9200
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    depends_on:
+      - els-hot
+
+  logstash:
+    image: logstash:9.3.6
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+    networks:
+      - elknet
+    environment:
+      - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    depends_on:
+      - els-hot
+  
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:9.3.6
+    container_name: filebeat
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+    networks:
+      - elknet
+    user: root
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    depends_on:
+      - logstash

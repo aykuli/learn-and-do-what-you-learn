@@ -1,0 +1,26 @@
+filebeat.inputs:
+- type: filestream
+  id: docker-logs-filestream
+  paths:
+    - '/var/lib/docker/containers/*/*.log'
+  parsers:
+    - container:
+        stream: all
+        format: auto
+- type: filestream
+  id: systemlogs-filestream
+  paths:
+    - /var/log/syslog
+  parsers:
+    - syslog:
+        format: auto
+        log_errors: true
+        add_error_key: true
+        
+
+processors:
+  - add_docker_metadata: ~
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  bulk_max_size: 256
