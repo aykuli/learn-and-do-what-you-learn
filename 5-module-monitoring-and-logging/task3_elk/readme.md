@@ -1,10 +1,11 @@
 
 
 ## compose.yml
+docker compose манифест [лежит в корне этой папки](./compose.yml):
 
 Нюансы:
 
-* `xpack.security.enabled=false` со значением `true` понадобятся сертификаты, как в официальном примере [здесь](https://github.com/elastic/elasticsearch/blob/main/docs/reference/setup/install/docker/docker-compose.yml).
+* `xpack.security.enabled=false` со значением `false`, иначе понадобятся сертификаты, как в официальном примере [здесь](https://github.com/elastic/elasticsearch/blob/main/docs/reference/setup/install/docker/docker-compose.yml).
 * `bootstrap.memory_lock=true` заблокировать свою оперативную память (RAM) в адресном пространстве процесса и запретить операционной системе сбрасывать её в своп (swap) на жесткий диск.
 Если просто включить этот параметр в c`ompose.yml`, контейнер Elasticsearch может упасть при старте с ошибкой Cannot allocate memory, так как у Docker-контейнера по умолчанию нет прав блокировать память.Чтобы всё завелось, в файле `compose.yml` (в блоке каждой ноды ES) уже добавлены необходимые инструкции `ulimits`, которые выставляют неограниченные лимиты на блокировку памяти:
 ```yaml
@@ -84,7 +85,7 @@ environment:
 
 ![](./assets/1.png)
 
-В пайплайне logstash использовала условный оператор в [logstash/pipeline/filebeat_pipeline.conf](./logstash/pipeline/filebeat_pipeline.conf), чтобы системные логи поши в свой индекс на линии 16
+В пайплайне logstash использовала условный оператор в [logstash/pipeline/filebeat_pipeline.conf](./logstash/pipeline/filebeat_pipeline.conf), чтобы системные логи пошли в свой индекс на линии 16
  [logstash/pipeline/filebeat_pipeline.conf](./logstash/pipeline/filebeat_pipeline.conf#L16), а докер логи - в свой индекс.
 
 Кстати, индексы сами автоматом создаются, те, что указаны в конфигурационном файле logstash pipeline.
@@ -92,14 +93,12 @@ environment:
 
 * docker-compose манифест [лежит в корне этой папки](./compose.yml):
 
-![лежит в корне этой папки](./compose.yml)
+* yml-конфигурации для стека:
 
-* yml-конфигурации для стека (если вы не использовали директорию help):
+    * filebeat conf [filebeat/filebeat.yml](./filebeat/filebeat.yml) - 2 инпута - системные логи и логи докер контейнеров. Я видела после уже выполнения задачи, что есть тип инпута специальный `syslog`, но переделывать не стала. Добавила ограничение на размер лога на всякий случай.
+    * pipeline for logstash [logstash/pipeline/filebeat_pipeline.conf](./logstash/pipeline/filebeat_pipeline.conf) - здесь есть мультиплексор логов, чтобы отправлять нужный лог в свой индекс.
 
-    * filebeat conf [filebeat/filebeat.yml](./filebeat/filebeat.yml)
-    * pipeline for logstash [logstash/pipeline/filebeat_pipeline.conf](./logstash/pipeline/filebeat_pipeline.conf)
-
-## Здание 2
+## Задание 2
 
 `index-patterns` переименованы в `data view` в 9-ой версии.
 
