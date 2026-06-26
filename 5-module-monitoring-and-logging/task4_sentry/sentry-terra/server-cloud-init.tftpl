@@ -1,0 +1,38 @@
+#cloud-config
+users:
+  - name: ${vm_user}
+    groups: sudo
+    shell: /bin/bash
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    ssh-authorized-keys:
+      - ${ssh_keys}
+swap:
+  filename: /swapfile
+  size: 17179869184
+  maxsize: 17179869184
+# Install Docker dependencies automatically on boot
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker.io
+  - docker-compose-v2
+  - git
+  - curl
+runcmd:
+  - [ systemctl, enable, --now, docker ]
+  - [ usermod, -aG, docker, ${vm_user} ]
+  # Download and run Sentry installer in the background cleanly
+  - |
+    echo "=== Starting Automated Sentry Installation ===" > /var/log/sentry-install.log
+    cd /opt
+    git clone --depth=1 --branch 26.6.0 https://github.com/getsentry/self-hosted.git >> /var/log/sentry-install.log 2>&1
+    cd self-hosted
+    
+    # Run the installation without interactive prompts
+    export SENTRY_NO_USER_PROMPT=1
+    ./install.sh --no-user-prompt >> /var/log/sentry-install.log 2>&1
+    
+    # Start up the Sentry Docker containers
+    docker compose up -d >> /var/log/sentry-install.log 2>&1
+    echo "=== Sentry Infrastructure is Up and Running ===" >> /var/log/sentry-install.log
