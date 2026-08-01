@@ -1,0 +1,51 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s 
+  # scrape_timeout is set to the global default (10s).
+
+remote_write:
+  - url: "http://victoriametrics:8428/api/v1/write"
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+scrape_configs:
+  # Мониторинг состояния сервера
+  - job_name: node_exporter
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+
+  # Мониторинг базы данных PostgreSQL
+  - job_name: postgres_exporter
+    static_configs:
+      - targets: ["host.docker.internal:9187"]
+
+  # Мониторинг самого Prometheus
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          app: "prometheus"
+  
+  # My microservices
+  - job_name: uploader
+    static_configs:
+      - targets: ["host.docker.internal:8082"]
+        labels:
+          app: "uploader"
+  - job_name: security
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+        labels:
+          app: "security"
+  - job_name: 'minio'
+    metrics_path: '/minio/v2/metrics/cluster'
+    static_configs:
+      - targets: ['minio:9000']
+        labels:
+          app: "minio"
+
+

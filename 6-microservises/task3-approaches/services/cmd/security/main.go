@@ -16,6 +16,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var jwtSecret []byte
@@ -47,6 +49,7 @@ type Claims struct {
 func main() {
 	_ = godotenv.Load()
 	dsn := os.Getenv("POSTGRES_DSN")
+	fmt.Println(dsn)
 
 	if dsn == "" {
 		log.Fatal("Критическая ошибка: Переменная POSTGRES_DSN не задана в окружении")
@@ -76,6 +79,7 @@ func main() {
 		v1.POST("/token", loginUser(storage, ctx))
 		v1.GET("/token/validation", validateToken)
 	}
+	r.GET("/metrics", prometheusHandler())
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -247,6 +251,13 @@ func extractToken(c *gin.Context) (string, error) {
 	}
 
 	return parts[1], nil
+}
+
+func prometheusHandler() gin.HandlerFunc {
+	h := promhttp.Handler()
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 // Регистрация пользователя:

@@ -1,0 +1,37 @@
+sources:
+  docker_logs:
+    type: "docker_logs"
+
+transforms:
+  filter_my_services:
+    type: "filter"
+    inputs:
+      - "docker_logs"
+    # Оставляем логи только тех контейнеров, чьи имена совпали
+    condition: 'includes(["security", "uploader"], .container_name)'
+  clear_metadata:
+    type: "remap"
+    inputs:
+      - "filter_my_services"
+    source: |
+      # Удаляем служебные лейблы докера, которые вызывают конфликт типов в Elasticsearch
+      del(.label)
+      
+      # Гарантируем, что сообщение — это строго строка текста
+      .message = string!(.message)
+
+sinks:
+  elasticsearch_out:
+    type: "elasticsearch"
+    inputs:
+      - "clear_metadata"
+    endpoints: ["http://elasticsearch:9200"]
+    mode: "bulk"
+    bulk:
+      index: "vector-%Y.%m.%d"
+    auth:
+      strategy: "basic"
+      user: admin
+      password: qwerty123456
+    healthcheck:
+      enabled: true
