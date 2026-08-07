@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: netology-learn
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: netology-learn
+  labels:
+    app: aynur
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aynur
+  template:
+    metadata:
+      labels:
+        app: aynur
+    spec:
+      initContainers:
+      - name: wait-for-service
+        image: busybox:latest
+        command: 
+        - sh
+        - -c
+        - |
+          echo "Waiting for nginx-service to be resolved in DNS..."
+          until nslookup nginx-service.netology-learn.svc.cluster.local; do 
+            echo "Service not found yet. Sleeping for 2 seconds..."
+            sleep 2
+          done
+          echo "Service found! Proceeding to launch Nginx app container."
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+          - containerPort: 80
+
