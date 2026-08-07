@@ -1,0 +1,19 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: netology-learn
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-aynur
+  namespace: netology-learn
+  labels:
+    app: hello-aynur
+spec:
+  containers:
+    - name: aynur-hello-container
+      image:  gcr.io/kubernetes-e2e-test-images/echoserver:2.2
+      ports:
+        - containerPort: 8080
