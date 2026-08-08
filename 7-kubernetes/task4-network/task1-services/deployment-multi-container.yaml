@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: netology-learn
+  labels:
+    app: aynur
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aynur
+  template:
+    metadata:
+      labels:
+        app: aynur
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+      - name: multitool
+        image: wbitt/network-multitool:latest
+        ports:
+        - containerPort: 8080
+        - containerPort: 10443
+        env:
+          - name: HTTP_PORT
+            value: "8080"
+          - name: HTTPS_PORT
+            value: "10443"

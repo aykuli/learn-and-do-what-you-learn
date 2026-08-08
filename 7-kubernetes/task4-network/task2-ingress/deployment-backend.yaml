@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: netology-learn
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: multitool
+        image: wbitt/network-multitool:latest
+        ports:
+        - containerPort: 3000
+        - containerPort: 3443
+        env:
+          - name: HTTP_PORT
+            value: "3000"
+          - name: HTTPS_PORT
+            value: "3443"
