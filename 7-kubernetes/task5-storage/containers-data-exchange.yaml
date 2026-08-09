@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task1-deploy
+  namespace: netology-learn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      aynur: learn
+  template:
+    metadata:
+      labels:
+        aynur: learn
+    spec:
+      containers:
+        - name: busybox
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo "$(date): привет от Айнур из busybox в multitool" >> /busybox/data/hello
+                sleep 5
+              done
+          volumeMounts:
+            - name: emptyvol
+              mountPath: /busybox/data
+        - name: multitool
+          image: wbitt/network-multitool:latest
+          volumeMounts:
+            - name: emptyvol
+              mountPath: /multitool/data
+      volumes:
+        - name: emptyvol
+          emptyDir: {}

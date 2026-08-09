@@ -1,0 +1,60 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: sc-aynur
+provisioner: microk8s.io/hostpath
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-aynur
+  namespace: netology-learn
+spec:
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 512Mi
+  storageClassName: sc-aynur
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-aynur
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      aynur: here
+  template:
+    metadata:
+      labels:
+        aynur: here
+    spec:
+      containers:
+      - name: writer-ctr
+        image: busybox:latest
+        command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo "$(date): привет от Айнур!" >> /out/squirrel
+                sleep 5
+              done
+        volumeMounts:
+        - name: vol-aynur
+          mountPath: /out
+      - name: reader-ctr
+        image: busybox:latest
+        command: ["/bin/sh", "-c"]
+        args: ["tail -f in/squirrel"]
+        volumeMounts:
+        - name: vol-aynur
+          mountPath: /in
+      volumes:
+      - name: vol-aynur
+        persistentVolumeClaim:
+          claimName: pvc-aynur
