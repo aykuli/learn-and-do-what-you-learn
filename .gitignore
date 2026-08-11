@@ -253,3 +253,7 @@ secrets
 authorize_key.json
 volumes
 compose copy 2.yml
+
+*.crt
+*.key
+*.csr

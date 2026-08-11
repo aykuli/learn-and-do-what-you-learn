@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task6-aynur
+  namespace: netology-learn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      aynur: configmap
+  template:
+    metadata:
+      labels:
+        aynur: configmap
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+          - containerPort: 80
+          volumeMounts:
+            - name: main-page-vol
+              mountPath: /usr/share/nginx/html
+        - name: multitool
+          image: wbitt/network-multitool:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: HTTP_PORT
+              value: "8080"
+            - name: HTTPS_PORT
+              value: "10443"
+      volumes:
+        - name: main-page-vol
+          configMap:
+            name: configmap-aynur-task6
+            items:
+              - key: index.html
+                path: index.html

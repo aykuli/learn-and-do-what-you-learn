@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-aynur-task6
+  namespace: netology-learn
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <title>Киберпанк Бинго</title>
+    </head>
+    <body style="font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #0d0e15; color: #fff;">
+
+        <!-- Стилизованный заголовок H1 с неоновым свечением -->
+        <h1 style="font-size: 42px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; text-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe;">
+            Демонстрация кнопки
+        </h1>
+
+        <!-- Кнопка, которая открывает кастомное диалоговое окно -->
+        <button onclick="document.getElementById('bingo-modal').showModal()" 
+                style="padding: 18px 40px; 
+                       font-size: 20px; 
+                       font-weight: bold; 
+                       color: #fff; 
+                       background: linear-gradient(135deg, #00f2fe, #4facfe); 
+                       border: none; 
+                       border-radius: 50px; 
+                       cursor: pointer; 
+                       box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); 
+                       transition: all 0.3s ease;"
+                onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 0 25px rgba(0, 242, 254, 0.8)';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0 15px rgba(0, 242, 254, 0.4)';">
+            Нажми на меня
+        </button>
+
+        <!-- Кастомное всплывающее окно (замена стандартного alert) -->
+        <dialog id="bingo-modal" 
+                style="border: 2px solid #ff007f; 
+                       border-radius: 20px; 
+                       padding: 40px; 
+                       background-color: #1a1c29; 
+                       color: #fff; 
+                       box-shadow: 0 0 30px rgba(255, 0, 127, 0.5); 
+                       text-align: center;
+                       width: 300px;">
+            
+            <h2 style="font-size: 36px; margin: 0 0 20px 0; color: #ff007f; text-shadow: 0 0 10px #ff007f;">
+                Бинго!
+            </h2>
+            
+            <p style="font-size: 16px; color: #a0a5c0; margin-bottom: 25px;">
+                Вы успешно активировали скрытое окно.
+            </p>
+            
+            <!-- Кнопка закрытия внутри окна -->
+            <button onclick="document.getElementById('bingo-modal').close()" 
+                    style="padding: 10px 25px; 
+                           font-size: 14px; 
+                           background: transparent; 
+                           color: #ff007f; 
+                           border: 2px solid #ff007f; 
+                           border-radius: 8px; 
+                           cursor: pointer; 
+                           font-weight: bold;
+                           transition: all 0.2s;"
+                    onmouseover="this.style.background='#ff007f'; this.style.color='#fff';"
+                    onmouseout="this.style.background='transparent'; this.style.color='#ff007f';">
+                Закрыть
+            </button>
+        </dialog>
+
+    </body>
+    </html>

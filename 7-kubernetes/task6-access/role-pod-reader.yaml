@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: log-pod-viewer
+  namespace: netology-learn
+rules:
+- apiGroups: [""]
+  resources:
+    - pods # Доступ к просмотру подов
+    - pods/log # Доступ к логам подов
+  verbs:
+    - get # Просмотр отдельных подов
+    - list # Список всех подов
+    - watch # Мониторинг изменений
+    - describe # Просмотр деталей
