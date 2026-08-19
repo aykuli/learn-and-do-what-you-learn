@@ -1,0 +1,46 @@
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {
+    kubernetes.io/enforce-mountable-secrets: "true"
+  }
+  name: "aynur20"
+
+service:
+  name: web-service20
+  portname: web-nodeport
+  type: NodePort
+  port: 80
+  nodePortCreate: true
+  nodePort: 30082
+
+ingress:
+  hosts:
+    - host: aynur20.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - aynur20.com
+      secretName: ayn-secret-2
+
+
+configMap:
+  name: aynapp-configmap20
+  data:
+    index.html: |
+      <!DOCTYPE html>
+      <html lang="ru">
+      <head>
+          <meta charset="UTF-8">
+          <title>Киберпанк Бинго</title>
+      </head>
+      <body style="font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #0d0e15; color: #fff;">
+
+          <!-- Стилизованный заголовок H1 с неоновым свечением -->
+          <h1 style="font-size: 42px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; text-shadow: 0 0 10px #f2fe00, 0 0 20px #f2fe00;">
+              Instance3 in namespace app2
+          </h1>
+      </body>
+      </html>

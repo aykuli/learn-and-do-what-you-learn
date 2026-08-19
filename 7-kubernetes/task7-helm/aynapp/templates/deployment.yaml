@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aynapp.fullname" . }}
+  namespace: {{ .Release.Namespace}}
+  labels:
+    {{- include "aynapp.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "aynapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "aynapp.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "aynapp.serviceAccountName" . }}
+      containers:
+      {{- range .Values.cons }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          ports:
+            - containerPort: {{ .containerPort }}
+          {{- with .volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      volumes:
+      {{- range $.Values.volumes }}
+        - name: {{ .name }}
+      {{- with .configMap }}
+          configMap:
+            name: {{ $.Values.configMap.name}}
+            items:
+            {{- toYaml .items | nindent 14 }}
+      {{- end }}
+      {{- end }}
