@@ -15,50 +15,72 @@
 </details>
 
 ```mermaid
-flowchart TD
-    subgraph Database
-    DB1@{ shape: lin-cyl, label: "DB1" }
-    DB2@{ shape: lin-cyl, label: "DB2" }
-    DB3@{ shape: lin-cyl, label: "DB3" }
-    compDB@{ shape: braces, label: "3x{4ГБ ОЗУ, 1vCPU}=\n 12ГБ ОЗУ, 3vCPU" }
+flowchart TD  
+    subgraph Node1 [Node1-рабочая]
+      resources1@{ shape: braces, label: "Cлужебные\nресурсы\n 0.3vCPU и 0.5GB RAM" }
+      
+      DB1@{ shape: lin-cyl, label: "DB1" }
+      cache1@{ shape: curv-trap, label: "Cache1" }
+      back1@{ shape: trap-b, label: "Backend" }
+      back2@{ shape: trap-b, label: "Backend" }
+      front1@{ shape: circle, label: "Frontend" }
+
+      front1 -->back1
+      front1 -->back2
+      back1 --> cache1
+      back2 --> cache1
+      cache1 --> DB1
     end
 
-    subgraph Cache
-    cache1@{ shape: curv-trap, label: "Cache1" }
-    cache2@{ shape: curv-trap, label: "Cache2" }
-    cache3@{ shape: curv-trap, label: "Cache3" }
-    compCache@{ shape: braces, label: "3x{4ГБ ОЗУ, 1vCPU}=\n 12ГБ ОЗУ, 3vCPU" }
-    end
-    
-    subgraph Backend
-    direction BT
-    back1@{ shape: trap-b, label: "Backend1" }
-    back2@{ shape: trap-b, label: "Backend2" }
-    back3@{ shape: trap-b, label: "Backend3" }
-    back4@{ shape: trap-b, label: "Backend4" }
-    back5@{ shape: trap-b, label: "Backend5" }
-    back6@{ shape: trap-b, label: "Backend6" }
-    back7@{ shape: trap-b, label: "Backend7" }
-    back8@{ shape: trap-b, label: "Backend8" }
-    back9@{ shape: trap-b, label: "Backend9" }
-    back10@{ shape: trap-b, label: "Backend10" }
-    compBack@{ shape: braces, label: "10x{600MБ ОЗУ, 1vCPU}=\n 6ГБ ОЗУ, 10vCPU" }
+    subgraph Node2 [Node2-рабочая]
+      resources2@{ shape: braces, label: "Cлужебные\nресурсы\n 0.3vCPU и 0.5GB RAM" }
+      
+      DB2@{ shape: lin-cyl, label: "DB1" }
+      cache2@{ shape: curv-trap, label: "Cache1" }
+      back3@{ shape: trap-b, label: "Backend" }
+      back4@{ shape: trap-b, label: "Backend" }
+      front2@{ shape: circle, label: "Frontend" }
+
+      front2 -->back3
+      front2 -->back4
+      back3 --> cache2
+      back4 --> cache2
+      cache2 --> DB2
     end
 
-    subgraph Frontend
-    direction BT
+    subgraph Node3 [Node3-рабочая]
+      resources3@{ shape: braces, label: "Cлужебные\nресурсы\n 0.3vCPU и 0.5GB RAM" }
+      
+      DB3@{ shape: lin-cyl, label: "DB1" }
+      cache3@{ shape: curv-trap, label: "Cache1" }
+      back5@{ shape: trap-b, label: "Backend" }
+      back6@{ shape: trap-b, label: "Backend" }
+      front3@{ shape: circle, label: "Frontend" }
 
-    front1@{ shape: circle, label: "Frontend1" }
-    front2@{ shape: circle, label: "Frontend2" }
-    front3@{ shape: circle, label: "Frontend3" }
-    front4@{ shape: circle, label: "Frontend4" }
-    front5@{ shape: circle, label: "Frontend5" }
-    compFront@{ shape: braces, label: "5x{50MБ ОЗУ, 0.2vCPU}=\n 250MБ ОЗУ, 1vCPU" }
+      front3 -->back5
+      front3 -->back6
+      back5 --> cache3
+      back6 --> cache3
+      cache3 --> DB3
     end
 
-    Frontend --> Backend
-    Backend --> Cache
-    Cache --> Database
+    subgraph Node4 [Node4-резервная]
+      back7@{ shape: trap-b, label: "Backend" }
+      back8@{ shape: trap-b, label: "Backend" }
+      back9@{ shape: trap-b, label: "Backend" }
+      back10@{ shape: trap-b, label: "Backend" }
+      front4@{ shape: circle, label: "Frontend" }
+      front5@{ shape: circle, label: "Frontend" }
+
+      front4 -->back7
+      front5 -->back8
+      front4 -->back9
+      front5 -->back10
+      back7 --> cache1
+      back8 --> cache1
+      back9 --> cache3
+      back10 --> cache2
+    end
 ```
 
 ### 1. Расчет вычислительных ресурсов
