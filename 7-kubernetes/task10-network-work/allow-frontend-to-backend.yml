@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: backend # принимающий под
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend # отправляющий
+      ports:
+        - protocol: TCP
+          port: 3000 # порт слушателя
