@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-v2-config
+  namespace: app
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>App V2 - Canary</title></head>
+    <body style="background-color: #f8d7da; text-align: center; margin-top: 100px;">
+        <h1>Внимание! Вы попали на КАНАРЕЕЧНУЮ версию (V2)</h1>
+    </body>
+    </html>

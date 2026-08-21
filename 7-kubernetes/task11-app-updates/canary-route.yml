@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: app-canary-route
+  namespace: app
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`aynur.com`) && PathPrefix(`/`)
+    kind: Rule
+    services:
+    - name: app-v1-service
+      port: 80
+      weight: 80 # 80% трафика на V1
+    - name: app-v2-canary-service
+      port: 80
+      weight: 20 # 20% трафика на V2

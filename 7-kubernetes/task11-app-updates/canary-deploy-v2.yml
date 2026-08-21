@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-v2-canary
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-multitool
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: nginx-multitool
+        version: v2
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27.0
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: web-page
+          mountPath: /usr/share/nginx/html
+      - name: multitool
+        image: wbitt/network-multitool:latest
+        ports:
+        - containerPort: 8080
+        env:
+          - name: HTTP_PORT
+            value: "8080"
+      volumes:
+      - name: web-page
+        configMap:
+          name: nginx-v2-config
