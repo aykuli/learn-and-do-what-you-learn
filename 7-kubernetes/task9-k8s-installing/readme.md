@@ -16,51 +16,29 @@
 
 ![](./assets/0.png)
 
-Затем полчив положительный эффект, увеличила count=4 для получения 4-х нод.
-![](./assets/00.png)
+Сделала шаги п устанвке нужных пакетов и настройки, инициировала мастера:
 
 ![](./assets/1.png)
 ![](./assets/2.png)
+
+Курлом скачала calico.yml манифест, и утановила плагин:
+
 ![](./assets/3.png)
+
+Присоединила воркера:
+
 ![](./assets/4.png)
+
+и плучила положительный результат - кластер из 2-х нод, мастера и воркера:
+
 ![](./assets/5.png)
+
+После положительного эффекта, увеличила count=4 для получения 4-х нод.
 ![](./assets/6.png)
 
-## Задание 2*. Установить HA кластер
 
-### conspect
-runcmd:
-  # 0. Полное отключение swap (на случай, если он есть в образе)
-  - swapoff -a
-  - sed -i '/swap/d' /etc/fstab
+Но смогла подключить только ещё одного воркера, на остальные ВМ я что-то даже ни в ssh, ни через последовательный порт ` metadata = { serial-port-enable = 1 }` не смогла зайти на ЯО. Хотя все ноды созданы по одному и тому же шаблону terraform манифеста [vms/worker-nodes.tf](./vms/worker-nodes.tf)
+По логам как будто не смог зайти на security.ubuntu.com. Пыталась пересоздать ноды, нов итоге упёрлась на блок со стороны ЯО.
 
-  # 1. Настройка сети и sysctl
-  - modprobe overlay # для containerd
-  - modprobe br_netfilter # для Calico
-  - sysctl --system
-  
-  # 2. Установка containerd
-  - apt-get update && apt-get install -y containerd
-  - mkdir -p /etc/containerd
-  - containerd config default > /etc/containerd/config.toml
-  - sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-  - systemctl restart containerd
-  
-  # 3. Добавление репозитория Kubernetes (v1.30+)
-  - apt-get update && apt-get install -y apt-transport-https ca-certificates curl gpg
-  - mkdir -p -m 755 /etc/apt/keyrings
-  - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-  - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-  
-  # 4. Установка компонентов
-  - apt-get update
-  - apt-get install -y kubelet kubeadm kubectl
-  - apt-mark hold kubelet kubeadm kubectl # замораживает текущие версии компонентов Kubernetes.
-  - systemctl enable --now kubelet
-
-
-  # 7. Установка CNI (Calico)
-  - curl https://raw.githubusercontent.com/projectcalico/calico/v3.32.1/manifests/calico.yaml -o /tmp/calico.yaml
-  - kubectl apply -f /tmp/calico.yaml
-
-  - kubeadm join 10.10.1.10:6443 --token tztqr7.uccn6bslk8plbkuz --discovery-token-ca-cert-hash sha256:e781eddf1832f659f8be8abf18fa3a8db5111d1a690d13cd41a03c923eea41be 
+Итого получила кластер из 3-х нод: мастера и 2-х воркеров.
+![](./assets/7.png)
