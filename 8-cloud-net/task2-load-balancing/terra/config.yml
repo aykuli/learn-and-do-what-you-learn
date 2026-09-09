@@ -1,0 +1,22 @@
+ssh_pwauth: no
+users:
+  - name: ${VM_USER}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${SSH_KEY}
+write_files:
+  - content: | 
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+      </head>
+      <body>
+        <img src="https://storage.yandexcloud.net/${bucket}/assets/cat.jpg" alt="Cat">
+      </body>
+      </html>
+    path: /var/www/html/index.html
+    permissions: '0644'
