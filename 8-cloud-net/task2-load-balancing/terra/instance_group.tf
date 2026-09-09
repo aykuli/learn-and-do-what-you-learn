@@ -1,7 +1,7 @@
 resource "yandex_compute_instance_group" "ayn-ig" {
   name               = "ayn-ig"
   folder_id          = var.folder_id
-  service_account_id = yandex_iam_service_account.ig-storage-support.id
+  service_account_id = yandex_iam_service_account.ig-support.id
   
   deletion_protection = false
   
@@ -10,6 +10,7 @@ resource "yandex_compute_instance_group" "ayn-ig" {
     resources {
       memory = 2
       cores  = 2
+      core_fraction = 20
     }
 
     boot_disk {
@@ -24,7 +25,7 @@ resource "yandex_compute_instance_group" "ayn-ig" {
 
     network_interface {
       network_id         = yandex_vpc_network.ayn-net.id
-      subnet_ids         = [ yandex_vpc_subnet.ayn-public-subent.id ]
+      subnet_ids         = [ yandex_vpc_subnet.ayn-subnet.id ]
       security_group_ids = [ yandex_vpc_security_group.ayn-sg.id ]
       nat = true
     }
@@ -33,8 +34,6 @@ resource "yandex_compute_instance_group" "ayn-ig" {
       user-data = templatefile("config.yml",{
         VM_USER = var.vm_user
         SSH_KEY = var.ssh_key,
-        bucket  = yandex_storage_bucket.ayn-bucket.id,
-        img_key = yandex_storage_object.ayn-img.key
       })
       ssh-keys = "${var.vm_user}:${var.ssh_key}"
       serial-port-enable = 1
@@ -42,6 +41,7 @@ resource "yandex_compute_instance_group" "ayn-ig" {
   }
 
   load_balancer {
+    
     target_group_name = "ayn-ig-lb"
     target_group_description = "Целевая группа для Сетевого балансировщика"
   }

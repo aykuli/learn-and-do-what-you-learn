@@ -15,7 +15,7 @@ write_files:
         <title>Document</title>
       </head>
       <body>
-        <img src="https://storage.yandexcloud.net/${bucket}/assets/cat.jpg" alt="Cat">
+        <img src="https://storage.yandexcloud.net/aynur-bucket-2026-09/assets/cat.jpg" alt="Cat">
       </body>
       </html>
     path: /var/www/html/index.html

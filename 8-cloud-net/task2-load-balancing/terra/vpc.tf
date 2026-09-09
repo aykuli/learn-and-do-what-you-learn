@@ -20,16 +20,9 @@ resource "yandex_vpc_route_table" "ayn_rt" {
   }
 }
 
-resource "yandex_vpc_subnet" "ayn-public-subent" {
-  name      = "public"
-  v4_cidr_blocks = ["192.168.10.0/24"]
-
-  network_id = yandex_vpc_network.ayn-net.id
-}
-
-resource "yandex_vpc_subnet" "ayn-private-subnet" {
-  name      = "private"
-  v4_cidr_blocks = ["192.168.20.0/24"]
+resource "yandex_vpc_subnet" "ayn-subnet" {
+  name      = "subnetayn"
+  v4_cidr_blocks = ["10.10.2.0/24"]
   
 
 
